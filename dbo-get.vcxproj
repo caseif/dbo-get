@@ -74,7 +74,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);CURL_STATICLIB</PreprocessorDefinitions>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;libeay32.lib;ssleay32.lib;wldap32.lib;libcurld.lib;libssh2d.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -111,10 +117,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DboProject.cpp" />
+    <ClCompile Include="jsoncpp.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DboProject.h" />
+    <ClInclude Include="json\json-forwards.h" />
+    <ClInclude Include="json\json.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>

@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 
+#include <curl/curl.h>
+
 #include "main.h"
 #include "DboProject.h"
 #include "util.h"
@@ -43,12 +45,13 @@ int main(int argc, char* argv[]) {
 
 std::vector<DboProject>* resolve(int argc, char* argv[]) {
     std::vector<DboProject> vec = std::vector<DboProject>(argc - 2);
+    bool fail = false;
+    curl_global_init(CURL_GLOBAL_ALL);
     for (int i = 0; i < argc - 2; i++) {
         std::string project = argv[2 + i];
         DboProject dbo = DboProject(project);
         vec[i] = dbo;
 
-        bool fail = false;
         if (!dbo.resolve()) {
             err("Failed to resolve project " + project);
             std::string alt = dbo.getAlternatives();
@@ -57,12 +60,9 @@ std::vector<DboProject>* resolve(int argc, char* argv[]) {
             }
             fail = true;
         }
-
-        if (fail) {
-            return NULL;
-        }
     }
-    return &vec;
+    curl_global_cleanup();
+    return fail ? NULL : &vec;
 }
 
 int install(int argc, char* argv[]) {
@@ -83,4 +83,5 @@ int install(int argc, char* argv[]) {
             return 1;
         }
     }
+    return 0;
 }
