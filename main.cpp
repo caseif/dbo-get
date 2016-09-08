@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 #include "DboProject.h"
 #include "util.h"
@@ -36,11 +37,15 @@ int main(int argc, char* argv[]) {
         err("Invalid command, try `dbo-get help`.");
         return 1;
     }
+}
 
+std::vector<DboProject>* resolve(int argc, char* argv[]) {
+    std::vector<DboProject> vec = std::vector<DboProject>(argc - 2);
     for (int i = 0; i < argc; i++) {
         std::string project = argv[2 + i];
         DboProject dbo = DboProject(project);
-        
+        vec[i] = dbo;
+
         bool fail = false;
         if (!dbo.resolve()) {
             err("Failed to resolve project " + project);
@@ -52,17 +57,28 @@ int main(int argc, char* argv[]) {
         }
 
         if (fail) {
-            return 1;
+            return NULL;
         }
     }
+    return &vec;
 }
 
-bool install(int argc, char* argv[]) {
+int install(int argc, char* argv[]) {
     if (argc < 3) {
         tooFewArgs(std::strcat(CMD_INSTALL, " <projects>..."));
         return 1;
     }
-    err("Command not yet implemented");
-    return 1;
 
+    std::vector<DboProject>* projects = resolve(argc, argv);
+    if (projects == NULL) {
+        return 1;
+    }
+    
+    for (int i = 0; i < projects->size(); i++) {
+        install((*projects)[i]);
+    }
+}
+
+int install(DboProject project) {
+    //TODO
 }
