@@ -1,6 +1,8 @@
 #include <iostream>
+#include <string>
 #include <vector>
 
+#include "main.h"
 #include "DboProject.h"
 #include "util.h"
 
@@ -41,7 +43,7 @@ int main(int argc, char* argv[]) {
 
 std::vector<DboProject>* resolve(int argc, char* argv[]) {
     std::vector<DboProject> vec = std::vector<DboProject>(argc - 2);
-    for (int i = 0; i < argc; i++) {
+    for (int i = 0; i < argc - 2; i++) {
         std::string project = argv[2 + i];
         DboProject dbo = DboProject(project);
         vec[i] = dbo;
@@ -65,7 +67,9 @@ std::vector<DboProject>* resolve(int argc, char* argv[]) {
 
 int install(int argc, char* argv[]) {
     if (argc < 3) {
-        tooFewArgs(std::strcat(CMD_INSTALL, " <projects>..."));
+        std::string usage = CMD_INSTALL;
+        usage += " <projects>...";
+        tooFewArgs(usage);
         return 1;
     }
 
@@ -73,12 +77,10 @@ int install(int argc, char* argv[]) {
     if (projects == NULL) {
         return 1;
     }
-    
-    for (int i = 0; i < projects->size(); i++) {
-        install((*projects)[i]);
-    }
-}
 
-int install(DboProject project) {
-    //TODO
+    for (size_t i = 0; i < projects->size(); i++) {
+        if (!(*projects)[i].install()) {
+            return 1;
+        }
+    }
 }

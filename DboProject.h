@@ -8,6 +8,7 @@ class DboProject {
         std::string latestVer;
         std::string alternatives;
     public:
+        DboProject();
         DboProject(std::string id);
         std::string getId();
         int getNumericId();

@@ -11,7 +11,7 @@ static inline void err(std::string str) {
     std::cout << "E: " << str.c_str() << std::endl;
 }
 
-static inline void tooFewArgs(char* usage) {
+static inline void tooFewArgs(std::string usage) {
     err("Too few args!");
     std::string str(usage);
     print("    Usage: dbo_get " + str + " <projects>...");

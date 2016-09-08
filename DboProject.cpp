@@ -2,6 +2,11 @@
 #include <string>
 
 #include "DboProject.h"
+#include "util.h"
+
+DboProject::DboProject() {
+    DboProject::id = "";
+}
 
 DboProject::DboProject(std::string id) {
     DboProject::id = id;
@@ -28,11 +33,13 @@ std::string DboProject::getAlternatives() {
 }
 
 bool DboProject::resolve() {
-    return false; //TODO
+    print("Resolving project " + getId() + "...");
+    return true; //TODO
 }
 
 bool DboProject::install() {
-    return false; //TODO
+    print("Installing project " + getId() + "...");
+    return true; //TODO
 }
 
 bool DboProject::remove() {
