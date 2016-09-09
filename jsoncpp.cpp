@@ -72,6 +72,7 @@ license you like.
 
 
 
+#include <stdint.h>
 
 #include "json/json.h"
 
