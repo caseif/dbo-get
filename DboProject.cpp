@@ -1,10 +1,13 @@
 #include <assert.h>
+#include <cstring>
 #include <string>
 
-#include <curl/curl.h>
+#include "curl/curl.h"
 
 #include "DboProject.h"
 #include "util.h"
+
+std::string const CF_SEARCH_URL = "https://api.curseforge.com/servermods/projects?search=";
 
 DboProject::DboProject() {
     DboProject::id = "";
@@ -46,9 +49,9 @@ bool DboProject::resolve() {
 		curl_easy_setopt(curl, CURLOPT_CAINFO, "res/curl-ca-bundle.crt");
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &json);
+		curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
 
-        curl_easy_setopt(curl, CURLOPT_URL, "https://caseif.net/");
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "payload=test");
+        curl_easy_setopt(curl, CURLOPT_URL, (CF_SEARCH_URL + getId()).c_str());
         CURLcode res = curl_easy_perform(curl);
         if (res != CURLE_OK) {
             std::string errStr = std::string(curl_easy_strerror(res));

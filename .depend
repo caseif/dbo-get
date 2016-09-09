@@ -1,0 +1,7 @@
+DboProject.o: DboProject.cpp curl/curl.h curl/curlver.h curl/curlbuild.h \
+ curl/curlrules.h curl/easy.h curl/multi.h curl/curl.h DboProject.h \
+ util.h
+jsoncpp.o: jsoncpp.cpp json/json.h
+main.o: main.cpp curl/curl.h curl/curlver.h curl/curlbuild.h \
+ curl/curlrules.h curl/easy.h curl/multi.h curl/curl.h main.h \
+ DboProject.h util.h
