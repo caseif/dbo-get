@@ -1,15 +1,17 @@
 CXX=g++
 
-CPPFLAGS=-m32 -v --std=c++11
+CPPFLAGS=-v --std=c++11
 
-LIBFLAGS=-lcurl -lssh2 -L"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin"
+LIBFLAGS=-lcurl -lssh2
 CPPFLAGS+= $(LIBFLAGS)
 
 RM=rm -f
 LDFLAGS=-g
 
 SRC=$(wildcard *.cpp)
-OBJS=$(subst .cpp,.o,$(SRCS))
+OBJS=$(subst .cpp,.o,$(SRC))
+$(info src is $(SRC))
+$(info objs is $(OBJS))
 
 all: dboget
 
