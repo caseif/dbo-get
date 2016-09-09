@@ -1,35 +1,29 @@
-CC=gcc
 CXX=g++
 
-CFLAGS=-m32
-CXXFLAGS=-m32
+CPPFLAGS=-m32 -v --std=c++11
 
-LIBFLAGS=-lcurl -lssh2 -L"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin""
-CSSFLAGS+= $(LIBFLAGS)
+LIBFLAGS=-lcurl -lssh2 -L"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin"
+CPPFLAGS+= $(LIBFLAGS)
 
 RM=rm -f
-CPPFLAGS=-g $(shell root-config --cflags)
-LDFLAGS=-g $(shell root-config --ldflags)
-LDLIBS=$(shell root-config --libs)
+LDFLAGS=-g
 
-SRCS=DboProject.cpp jsoncpp.cpp main.cpp
+SRC=$(wildcard *.cpp)
 OBJS=$(subst .cpp,.o,$(SRCS))
 
 all: dboget
 
 dboget: $(OBJS)
-	$(CXX) $(LDFLAGS) -o dbo-get $(OBJS) $(LDLIBS) $(CXXFLAGS)
+	$(CXX) $(LDFLAGS) -o dbo-get $(OBJS) $(LDLIBS) $(CPPFLAGS)
 
-depend: .depend
+%.o : %.cpp
+	@g++ -MD -c -o $@ $<
+	@cp $*.d $*.P; \
+			sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+			-e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+			rm -f $*.d
 
-.depend: $(SRCS)
-	rm -f ./.depend
-	$(CXX) $(CPPFLAGS) -MM $^>>./.depend;
+-include *.P
 
 clean:
 	$(RM) $(OBJS)
-
-dist-clean: clean
-	$(RM) *~ .depend
-
-include .depend
