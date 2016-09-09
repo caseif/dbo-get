@@ -2,7 +2,7 @@
 #include <cstring>
 #include <string>
 
-#include "curl/curl.h"
+#include <curl/curl.h>
 
 #include "DboProject.h"
 #include "util.h"
@@ -18,7 +18,6 @@ DboProject::DboProject(std::string id) {
 }
 
 std::string DboProject::getId() {
-    assert(DboProject::isResolved);
     return DboProject::id;
 }
 
@@ -41,25 +40,30 @@ bool DboProject::resolve() {
     print("Resolving project " + getId() + "...");
 
     CURL* curl = curl_easy_init();
-    if (curl) {
-		std::string json;
-		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1);
-		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 1);
-		curl_easy_setopt(curl, CURLOPT_CAINFO, "res/curl-ca-bundle.crt");
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &json);
-		curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
+	if (!curl) {
+		return false;
+	}
 
-        curl_easy_setopt(curl, CURLOPT_URL, (CF_SEARCH_URL + getId()).c_str());
-        CURLcode res = curl_easy_perform(curl);
-        if (res != CURLE_OK) {
-            std::string errStr = std::string(curl_easy_strerror(res));
-			err("curl_easy_perform() failed: " + errStr);
-        }
-		print(json);
-        curl_easy_cleanup(curl);
+	std::string json;
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 1);
+	curl_easy_setopt(curl, CURLOPT_CAINFO, "res/curl-ca-bundle.crt");
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &json);
+	curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
+
+    curl_easy_setopt(curl, CURLOPT_URL, (CF_SEARCH_URL + getId()).c_str());
+    CURLcode res = curl_easy_perform(curl);
+    if (res != CURLE_OK) {
+        std::string errStr = std::string(curl_easy_strerror(res));
+		err("curl_easy_perform() failed: " + errStr);
+		return false;
     }
+	print(json);
+    curl_easy_cleanup(curl);
+
+	isResolved = true;
     return true; //TODO
 }
 

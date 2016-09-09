@@ -2,7 +2,7 @@
 
 class DboProject {
     private:
-        bool isResolved;
+        bool isResolved = false;
         std::string id;
         int numId;
         std::string latestVer;
