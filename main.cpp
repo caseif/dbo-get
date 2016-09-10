@@ -7,6 +7,7 @@
 
 #include "main.h"
 #include "DboProject.h"
+#include "config.h"
 #include "util.h"
 
 char* const CMD_INSTALL = "install";
@@ -21,6 +22,8 @@ int main(int argc, char* argv[]) {
         print("    Usage: dbo_get <command> <projects>...");
         return 1;
     }
+
+    Config::load();
 
     char* cmd = argv[1];
     if (std::strcmp(cmd, CMD_INSTALL) == 0) {
