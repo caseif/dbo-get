@@ -19,7 +19,8 @@ the IDE and build it, or run `msbuild` from the command line in the project dire
 `dbo-get` has four subcommands:
 
 | Command | Description |
-| `store` | Sets the current location for storing packages. Each store has its own unique local index.
+| --- | --- |
+| `store <location>` | Sets the current location for storing packages. Each store has its own unique local index.
 | `install <projects>...` | Installs the given projects to disk.
 | `upgrade` | Attempts to upgrade installed projects.
 | `remove <projects>...` | Attempts to remove the given projects from disk.
