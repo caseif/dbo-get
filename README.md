@@ -8,8 +8,9 @@ Coming soon. A Windows installer and `deb` package will be made available on ini
 `rpm` package.
 
 ## Building
-On *nix systems, simply run `make` in the project directory. Note that on Debian, the `libcurl4-openssl-dev` and
-`libssh2-1-dev` packages must be installed. The build has not been tested on any other distributions.
+On *nix systems, simply run `make` in the project directory. `gcc` 4.8 or higher is recommended. Note that on Debian, the
+`libcurl4-openssl-dev` and `libssh2-1-dev` packages must be installed. The build has not been tested on any other
+distributions.
 
 On Windows, Visual Studio or MSBuild >=14.0 must be installed. Additionally, `curl.lib` and `ssh2.lib` (and/or their
 debug configuration counterparts) must be available on the library search path. To build, simply open the solution in
