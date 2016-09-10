@@ -16,11 +16,11 @@ inline void err(std::string str) {
 inline void tooFewArgs(std::string usage) {
     err("Too few args!");
     std::string str(usage);
-    print("    Usage: dbo_get " + str + " <projects>...");
+    print("    Usage: dbo_get " + usage);
 }
 
 size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb, std::string *s);
 
-std::vector<std::string> explode(const std::string& str, const char& ch);
+std::vector<std::string> explode(std::string const & s, char delim);
 
 bool makePath(const std::string& path);

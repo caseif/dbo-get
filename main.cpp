@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstring>
 #include <iostream>
 #include <string>
@@ -10,41 +11,71 @@
 #include "config.h"
 #include "util.h"
 
-char* const CMD_INSTALL = "install";
-char* const CMD_REMOVE = "remove";
-char* const CMD_UPGRADE = "upgrade";
-char* const CMD_HELP = "help";
-char* const cmds[] = {"install", "remove", "upgrade", "help"};
+std::string const CMD_STORE = "store";
+std::string const CMD_INSTALL = "install";
+std::string const CMD_REMOVE = "remove";
+std::string const CMD_UPGRADE = "upgrade";
+std::string const CMD_HELP = "help";
+std::string const cmds[] = {CMD_STORE, CMD_INSTALL, CMD_REMOVE, CMD_UPGRADE, CMD_HELP};
+
+std::string const USG_STORE = "[location]";
+std::string const USG_INSTALL = "<projects>...";
+std::string const USG_UPGRADE = "";
+std::string const USG_REMOVE = "<projects>...";
+std::string const USG_HELP = "[command]";
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         err("Too few args!");
-        print("    Usage: dbo_get <command> <projects>...");
+        print("    Usage: dbo_get <command>");
         return 1;
     }
 
     Config::load();
 
     char* cmd = argv[1];
-    if (std::strcmp(cmd, CMD_INSTALL) == 0) {
+    if (matchCmd(cmd, CMD_STORE)) {
+        return setStore(argc, argv);
+    } else if (matchCmd(cmd, CMD_INSTALL)) {
         return install(argc, argv);
-    } else if (std::strcmp(cmd, CMD_REMOVE) == 0) {
+    } else if (matchCmd(cmd, CMD_REMOVE)) {
         if (argc < 3) {
-            tooFewArgs(cmd);
+            tooFewArgs(CMD_REMOVE + "<projects>...");
             return 1;
         }
         err("Command not yet implemented");
         return 1;
-    } else if (std::strcmp(cmd, CMD_UPGRADE) == 0) {
+    } else if (matchCmd(cmd, CMD_UPGRADE)) {
         err("Command not yet implemented");
         return 1;
-    } else if (std::strcmp(cmd, CMD_HELP) == 0) {
+    } else if (matchCmd(cmd, CMD_HELP)) {
         err("Command not yet implemented");
         return 1;
     } else {
         err("Invalid command, try `dbo-get help`.");
         return 1;
     }
+}
+
+int setStore(int argc, char* argv[]) {
+    if (argc < 3) {
+        std::string* loc = Config::get(Config::KEY_STORE);
+        print("Current store location: " + (loc == NULL ? "NOT SET" : *loc));
+        return 0;
+    }
+
+    std::string path = "";
+    for (int i = 2; i < argc; i++) {
+        path += argv[i];
+        if (i < argc - 1) {
+            path += " ";
+        }
+    }
+    std::replace(path.begin(), path.end(), '\\', '/');
+    Config::set(Config::KEY_STORE, path);
+    print("Successfully set store location as \"" + path + "\"");
+
+    return 0;
 }
 
 std::vector<DboProject>* resolve(int argc, char* argv[]) {
@@ -67,9 +98,7 @@ std::vector<DboProject>* resolve(int argc, char* argv[]) {
 
 int install(int argc, char* argv[]) {
     if (argc < 3) {
-        std::string usage = CMD_INSTALL;
-        usage += " <projects>...";
-        tooFewArgs(usage);
+        tooFewArgs(CMD_INSTALL + " " + USG_INSTALL);
         return 1;
     }
 
