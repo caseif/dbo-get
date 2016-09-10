@@ -55,10 +55,6 @@ std::vector<DboProject>* resolve(int argc, char* argv[]) {
 
         if (!dbo.resolve()) {
             err("Failed to resolve project " + project);
-            std::string alt = dbo.getAlternatives();
-            if (alt.length() > 0) {
-                print("    Possible alternatives: " + *alt.c_str());
-            }
             fail = true;
         }
     }
