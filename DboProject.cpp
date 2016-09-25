@@ -61,7 +61,8 @@ void setOptions(CURL* curl) {
 bool DboProject::resolve() {
     print("Resolving project " + getId() + "...");
 
-    return isResolved = (doLookup() && doQuery());
+    isResolved = (doLookup() && doQuery());
+    return isResolved;
 }
 
 bool DboProject::doLookup() {
@@ -109,7 +110,7 @@ bool DboProject::parseId(std::string json) {
     std::stringstream contentStream(json);
     std::string alts = "";
     contentStream >> root;
-    for (size_t i = 0; i < root.size(); i++) {
+    for (Json::ArrayIndex i = 0; i < root.size(); i++) {
         if (root[i].get("slug", "") == getId()) {
             numId = root[i].get("id", -1).asInt();
             return true;
@@ -149,12 +150,43 @@ bool DboProject::populateFields(std::string json) {
     return true;
 }
 
-bool DboProject::install() {
-    assert(isResolved);
-    print("Installing project " + getId() + "...");
-    return true; //TODO
+size_t write_callback(void* buffer, size_t size, size_t nitems, void* userp) {
+    FILE* file = (FILE*)userp;
+    size_t write;
+    size *= nitems;
+    write = fwrite(buffer, size, nitems, file);
+    return size;
 }
 
-bool DboProject::remove() {
+bool DboProject::install(std::string storeLoc) {
+    assert(isResolved);
+    print("Installing project " + getId() + "...");
+    
+    CURL* query = curl_easy_init();
+    FILE* data;
+    fopen_s(&data, storeLoc.c_str(), "wb");
+    curl_easy_setopt(query, CURLOPT_WRITEFUNCTION, write_callback);
+    curl_easy_setopt(query, CURLOPT_FILE, data);
+
+    std::string url = getFileUrl();
+    curl_easy_setopt(query, CURLOPT_URL, url);
+
+    curl_easy_setopt(query, CURLOPT_FOLLOWLOCATION, true);
+    curl_easy_setopt(query, CURLOPT_SSL_VERIFYPEER, false);
+
+    CURLcode res = curl_easy_perform(query);
+    if (res != CURLE_OK) {
+        std::string errStr = std::string(curl_easy_strerror(res));
+        err("curl_easy_perform() failed: " + errStr);
+        return false;
+    }
+    curl_easy_cleanup(query);
+
+    print("Done installing " + getId());
+
+    return true;
+}
+
+bool DboProject::remove(std::string storeLoc) {
     return false; //TODO
 }

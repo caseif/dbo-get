@@ -24,6 +24,6 @@ class DboProject {
 		std::string getFileName();
 		std::string getFileMD5();
         bool resolve();
-        bool install();
-        bool remove();
+        bool install(std::string storeLoc);
+        bool remove(std::string storeLoc);
 };

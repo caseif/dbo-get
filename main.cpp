@@ -78,22 +78,22 @@ int setStore(int argc, char* argv[]) {
     return 0;
 }
 
-std::vector<DboProject>* resolve(int argc, char* argv[]) {
-    std::vector<DboProject> vec = std::vector<DboProject>(argc - 2);
+std::vector<DboProject*> resolve(int argc, char* argv[]) {
+    std::vector<DboProject*> vec = std::vector<DboProject*>(argc - 2);
     bool fail = false;
     curl_global_init(CURL_GLOBAL_ALL);
     for (int i = 0; i < argc - 2; i++) {
         std::string project = argv[2 + i];
-        DboProject dbo = DboProject(project);
+        DboProject* dbo = new DboProject(project);
         vec[i] = dbo;
 
-        if (!dbo.resolve()) {
+        if (!dbo->resolve()) {
             err("Failed to resolve project " + project);
             fail = true;
         }
     }
     curl_global_cleanup();
-    return fail ? NULL : &vec;
+    return fail ? std::vector<DboProject*>() : vec;
 }
 
 int install(int argc, char* argv[]) {
@@ -102,13 +102,21 @@ int install(int argc, char* argv[]) {
         return 1;
     }
 
-    std::vector<DboProject>* projects = resolve(argc, argv);
-    if (projects == NULL) {
+    std::string* loc = Config::get(Config::KEY_STORE);
+    if (loc == NULL) {
+        err("Store location is not set; please run store command first");
+        return 1;
+    }
+    makePath(*loc);
+
+    std::vector<DboProject*> projects = resolve(argc, argv);
+    if (projects.size() == 0) {
+        err("No projects specified for installation");
         return 1;
     }
 
-    for (size_t i = 0; i < projects->size(); i++) {
-        if (!(*projects)[i].install()) {
+    for (size_t i = 0; i < projects.size(); i++) {
+        if (!projects[i]->install(*loc)) {
             return 1;
         }
     }
