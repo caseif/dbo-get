@@ -119,14 +119,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="config.cpp" />
-    <ClCompile Include="DboProject.cpp" />
+    <ClCompile Include="dbo_project.cpp" />
     <ClCompile Include="jsoncpp.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.h" />
-    <ClInclude Include="DboProject.h" />
+    <ClInclude Include="dbo_project.h" />
     <ClInclude Include="json\json-forwards.h" />
     <ClInclude Include="json\json.h" />
     <ClInclude Include="main.h" />

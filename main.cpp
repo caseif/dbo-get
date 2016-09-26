@@ -7,7 +7,7 @@
 #include <curl/curl.h>
 
 #include "main.h"
-#include "DboProject.h"
+#include "dbo_project.h"
 #include "config.h"
 #include "util.h"
 

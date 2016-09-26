@@ -6,7 +6,7 @@
 #include <curl/curl.h>
 #include "json/json.h"
 
-#include "DboProject.h"
+#include "dbo_project.h"
 #include "util.h"
 
 std::string const CF_SEARCH_URL = "https://api.curseforge.com/servermods/projects?search=";
