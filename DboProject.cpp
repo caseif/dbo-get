@@ -150,12 +150,9 @@ bool DboProject::populateFields(std::string json) {
     return true;
 }
 
-size_t write_callback(void* buffer, size_t size, size_t nitems, void* userp) {
-    FILE* file = (FILE*)userp;
-    size_t write;
-    size *= nitems;
-    write = fwrite(buffer, size, nitems, file);
-    return size;
+size_t write_callback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+    size_t written = fwrite(ptr, size, nmemb, stream);
+    return written;
 }
 
 bool DboProject::install(std::string storeLoc) {
@@ -164,12 +161,16 @@ bool DboProject::install(std::string storeLoc) {
     
     CURL* query = curl_easy_init();
     FILE* data;
-    fopen_s(&data, storeLoc.c_str(), "wb");
+    errno_t errCode;
+    std::string fileName = storeLoc + "/" + getFileName();
+    if ((errCode = fopen_s(&data, fileName.c_str(), "w+b")) != 0) {
+        perror("Failed to open destination file for writing");
+        return false;
+    }
     curl_easy_setopt(query, CURLOPT_WRITEFUNCTION, write_callback);
-    curl_easy_setopt(query, CURLOPT_FILE, data);
+    curl_easy_setopt(query, CURLOPT_WRITEDATA, data);
 
-    std::string url = getFileUrl();
-    curl_easy_setopt(query, CURLOPT_URL, url);
+    curl_easy_setopt(query, CURLOPT_URL, getFileUrl().c_str());
 
     curl_easy_setopt(query, CURLOPT_FOLLOWLOCATION, true);
     curl_easy_setopt(query, CURLOPT_SSL_VERIFYPEER, false);
@@ -182,7 +183,7 @@ bool DboProject::install(std::string storeLoc) {
     }
     curl_easy_cleanup(query);
 
-    print("Done installing " + getId());
+    print("Done installing " + getId() + ".");
 
     return true;
 }
