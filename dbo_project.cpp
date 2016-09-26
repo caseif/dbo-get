@@ -12,14 +12,6 @@
 std::string const CF_SEARCH_URL = "https://api.curseforge.com/servermods/projects?search=";
 std::string const CF_QUERY_URL = "https://api.curseforge.com/servermods/files?projectIds=";
 
-DboProject::DboProject() {
-    DboProject::id = "";
-}
-
-DboProject::DboProject(std::string id) {
-    DboProject::id = id;
-}
-
 std::string DboProject::getId() {
     return DboProject::id;
 }
@@ -28,20 +20,28 @@ int DboProject::getNumericId() {
     return DboProject::numId;
 }
 
-std::string DboProject::getLatestVersion() {
-    return DboProject::latestVer;
+std::string DboProject::getVersion() {
+    return DboProject::version;
 }
 
-std::string DboProject::getFileUrl() {
-    return DboProject::fileUrl;
+RemoteProject::RemoteProject() {
+    RemoteProject::id = "";
 }
 
-std::string DboProject::getFileName() {
-    return DboProject::fileName;
+RemoteProject::RemoteProject(std::string id) {
+    RemoteProject::id = id;
 }
 
-std::string DboProject::getFileMD5() {
-    return DboProject::fileName;
+std::string RemoteProject::getFileUrl() {
+    return RemoteProject::fileUrl;
+}
+
+std::string RemoteProject::getFileName() {
+    return RemoteProject::fileName;
+}
+
+std::string RemoteProject::getFileMD5() {
+    return RemoteProject::fileName;
 }
 
 std::string parseVersion(std::string name) {
@@ -58,14 +58,14 @@ void setOptions(CURL* curl) {
     curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
 }
 
-bool DboProject::resolve() {
+bool RemoteProject::resolve() {
     print("Resolving project " + getId() + "...");
 
     isResolved = (doLookup() && doQuery());
     return isResolved;
 }
 
-bool DboProject::doLookup() {
+bool RemoteProject::doLookup() {
     CURL* search = curl_easy_init();
     if (!search) {
         return false;
@@ -87,7 +87,7 @@ bool DboProject::doLookup() {
     return parseId(json);
 }
 
-bool DboProject::doQuery() {
+bool RemoteProject::doQuery() {
     CURL* query = curl_easy_init();
     std::string json;
     setOptions(query);
@@ -105,7 +105,7 @@ bool DboProject::doQuery() {
     return populateFields(json);
 }
 
-bool DboProject::parseId(std::string json) {
+bool RemoteProject::parseId(std::string json) {
     Json::Value root;
     std::stringstream contentStream(json);
     std::string alts = "";
@@ -128,7 +128,7 @@ bool DboProject::parseId(std::string json) {
     return false;
 }
 
-bool DboProject::populateFields(std::string json) {
+bool RemoteProject::populateFields(std::string json) {
     Json::Value root;
     std::stringstream contentStream(json);
     contentStream >> root;
@@ -138,7 +138,7 @@ bool DboProject::populateFields(std::string json) {
     }
     Json::Value latest = root[root.size() - 1];
     std::string name = latest.get("name", "").asString();
-    latestVer = parseVersion(name);
+    version = parseVersion(name);
     fileUrl = latest.get("downloadUrl", "").asString();
     fileName = latest.get("fileName", "").asString();
     fileMD5 = latest.get("md5", "").asString();
@@ -155,7 +155,7 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
     return written;
 }
 
-bool DboProject::install(std::string storeLoc) {
+bool RemoteProject::install(std::string storeLoc) {
     assert(isResolved);
     print("Installing project " + getId() + "...");
     
@@ -188,6 +188,18 @@ bool DboProject::install(std::string storeLoc) {
     return true;
 }
 
-bool DboProject::remove(std::string storeLoc) {
+LocalProject::LocalProject() {
+    LocalProject::id = "";
+}
+
+LocalProject::LocalProject(std::string id) {
+    LocalProject::id = id;
+}
+
+std::vector<std::string> LocalProject::getFiles() {
+    return LocalProject::files;
+}
+
+bool LocalProject::remove(std::string storeLoc) {
     return false; //TODO
 }

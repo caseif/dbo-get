@@ -78,13 +78,13 @@ int setStore(int argc, char* argv[]) {
     return 0;
 }
 
-std::vector<DboProject*> resolve(int argc, char* argv[]) {
-    std::vector<DboProject*> vec = std::vector<DboProject*>(argc - 2);
+std::vector<RemoteProject*> resolve(int argc, char* argv[]) {
+    std::vector<RemoteProject*> vec = std::vector<RemoteProject*>(argc - 2);
     bool fail = false;
     curl_global_init(CURL_GLOBAL_ALL);
     for (int i = 0; i < argc - 2; i++) {
         std::string project = argv[2 + i];
-        DboProject* dbo = new DboProject(project);
+        RemoteProject* dbo = new RemoteProject(project);
         vec[i] = dbo;
 
         if (!dbo->resolve()) {
@@ -93,7 +93,7 @@ std::vector<DboProject*> resolve(int argc, char* argv[]) {
         }
     }
     curl_global_cleanup();
-    return fail ? std::vector<DboProject*>() : vec;
+    return fail ? std::vector<RemoteProject*>() : vec;
 }
 
 int install(int argc, char* argv[]) {
@@ -109,7 +109,7 @@ int install(int argc, char* argv[]) {
     }
     makePath(*loc);
 
-    std::vector<DboProject*> projects = resolve(argc, argv);
+    std::vector<RemoteProject*> projects = resolve(argc, argv);
     if (projects.size() == 0) {
         err("No projects specified for installation");
         return 1;

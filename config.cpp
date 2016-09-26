@@ -33,7 +33,7 @@ std::string Config::getConfigDir() {
 }
 
 std::string Config::getConfigFile() {
-    return getConfigDir() + "/global.json";
+    return getConfigDir() + "/global.properties";
 }
 
 void Config::load() {
