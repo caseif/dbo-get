@@ -11,8 +11,6 @@
 #include "config.h"
 #include "util.h"
 
-std::map<std::string, std::string> Config::configMap;
-
 const std::string Config::KEY_STORE = "store";
 
 std::string Config::getAppdataDir() {

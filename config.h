@@ -15,15 +15,15 @@
 
 class Config {
     private:
-        static std::map<std::string, std::string> configMap;
-        static std::string getAppdataDir();
-        static std::string getConfigDir();
-        static std::string getConfigFile();
-        static void save();
+        std::map<std::string, std::string> configMap;
+        std::string getAppdataDir();
+        std::string getConfigDir();
+        std::string getConfigFile();
+        void save();
     public:
         const static std::string KEY_STORE;
 
-        static void load();
-        static std::string* get(std::string key);
-        static void set(std::string key, std::string value);
+        void load();
+        std::string* get(std::string key);
+        void set(std::string key, std::string value);
 };
