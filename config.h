@@ -21,6 +21,10 @@ class Config {
         std::string getConfigFile();
         void save();
     public:
+        Config();
+        Config(Config const&) = delete;
+        void operator = (Config const&) = delete;
+        static Config& getInstance();
         const static std::string KEY_STORE;
 
         void load();

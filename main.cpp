@@ -24,8 +24,6 @@ std::string const USG_UPGRADE = "";
 std::string const USG_REMOVE = "<projects>...";
 std::string const USG_HELP = "[command]";
 
-Config config = Config();
-
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         err("Too few args!");
@@ -33,7 +31,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    config.load();
+    Config::getInstance().load();
 
     char* cmd = argv[1];
     if (matchCmd(cmd, CMD_STORE)) {
@@ -61,7 +59,7 @@ int main(int argc, char* argv[]) {
 
 int setStore(int argc, char* argv[]) {
     if (argc < 3) {
-        std::string* loc = config.get(Config::KEY_STORE);
+        std::string* loc = Config::getInstance().get(Config::KEY_STORE);
         print("Current store location: " + (loc == NULL ? "NOT SET" : *loc));
         return 0;
     }
@@ -74,7 +72,7 @@ int setStore(int argc, char* argv[]) {
         }
     }
     std::replace(path.begin(), path.end(), '\\', '/');
-    config.set(Config::KEY_STORE, path);
+    Config::getInstance().set(Config::KEY_STORE, path);
     print("Successfully set store location as \"" + path + "\"");
 
     return 0;
@@ -104,7 +102,7 @@ int install(int argc, char* argv[]) {
         return 1;
     }
 
-    std::string* loc = config.get(Config::KEY_STORE);
+    std::string* loc = Config::getInstance().get(Config::KEY_STORE);
     if (loc == NULL) {
         err("Store location is not set; please run store command first");
         return 1;

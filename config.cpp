@@ -13,6 +13,14 @@
 
 const std::string Config::KEY_STORE = "store";
 
+Config::Config() {
+}
+
+Config& Config::getInstance() {
+    static Config instance;
+    return instance;
+}
+
 std::string Config::getAppdataDir() {
     if (OS == "win") {
         return getenv("APPDATA");
