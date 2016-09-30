@@ -118,7 +118,7 @@ int install(int argc, char* argv[]) {
     for (size_t i = 0; i < projects.size(); i++) {
         RemoteProject proj = *projects[i];
         print("Installing project " + proj.getId() + "...");
-        if (!projects[i]->install(*loc)) {
+        if (!projects[i]->install()) {
             return 1;
         }
         print("Done installing " + proj.getId() + ".");

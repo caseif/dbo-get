@@ -19,6 +19,8 @@ class RemoteProject : public DboProject {
         std::string fileName;
         std::string fileMD5;
 
+        void installFiles();
+
     public:
         RemoteProject();
         RemoteProject(std::string id);
@@ -30,7 +32,7 @@ class RemoteProject : public DboProject {
         std::string getFileName();
         std::string getFileMD5();
         bool resolve();
-        bool install(std::string storeLoc);
+        bool install();
 };
 
 class LocalProject : public DboProject {

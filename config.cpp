@@ -1,8 +1,3 @@
-#ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
-#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -19,27 +14,6 @@ Config::Config() {
 Config& Config::getInstance() {
     static Config instance;
     return instance;
-}
-
-std::string Config::getAppdataDir() {
-    if (OS == "win") {
-        return getenv("APPDATA");
-    } else {
-        std::string userHome = getenv("HOME");
-        if (OS == "osx") {
-            return userHome + "/Library/Application Support";
-        } else {
-            return userHome + "/.config";
-        }
-    }
-}
-
-std::string Config::getConfigDir() {
-    return getAppdataDir() + "/dbo-get";
-}
-
-std::string Config::getConfigFile() {
-    return getConfigDir() + "/global.properties";
 }
 
 void Config::load() {

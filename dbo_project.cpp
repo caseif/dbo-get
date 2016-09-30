@@ -155,15 +155,16 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
     return written;
 }
 
-bool RemoteProject::install(std::string storeLoc) {
+bool RemoteProject::install() {
     assert(isResolved);
     
     CURL* query = curl_easy_init();
     FILE* data;
     errno_t errCode;
-    std::string fileName = storeLoc + "/" + getFileName();
+    makePath(getDownloadCache());
+    std::string fileName = getDownloadCache() + "/" + getFileName();
     if ((errCode = fopen_s(&data, fileName.c_str(), "w+b")) != 0) {
-        perror("Failed to open destination file for writing.");
+        perror("Failed to open destination file for writing");
         return false;
     }
     curl_easy_setopt(query, CURLOPT_WRITEFUNCTION, write_callback);
@@ -182,6 +183,10 @@ bool RemoteProject::install(std::string storeLoc) {
     }
     curl_easy_cleanup(query);
 
+    fclose(data);
+
+    installFiles();
+
     std::vector<std::string> files = std::vector<std::string>(1); //TODO
     files[0] = getFileName();
     StoreFile::getInstance().addProject(&LocalProject(id, numId, version, &files));
@@ -189,8 +194,19 @@ bool RemoteProject::install(std::string storeLoc) {
     return true;
 }
 
+void RemoteProject::installFiles() {
+    std::ifstream src(getDownloadCache() + "/" + getFileName(), std::ios::binary);
+    if (!src.is_open()) {
+        perror("Failed to read file from download cache");
+    }
+    std::ofstream dst(*Config::getInstance().get(Config::KEY_STORE) + "/" + getFileName(), std::ios::binary);
+    dst << src.rdbuf();
+    src.close();
+    dst.flush();
+    dst.close();
+}
+
 LocalProject::LocalProject() {
-    LocalProject::id = "";
 }
 
 LocalProject::LocalProject(std::string id, int numId, std::string version, std::vector<std::string>* files) {

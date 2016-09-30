@@ -1,5 +1,10 @@
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include "util.h"
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <sys/stat.h> // stat
@@ -90,4 +95,31 @@ bool makePath(const std::string& path) {
     default:
         return false;
     }
+}
+
+std::string getAppdataDir() {
+    if (OS == "win") {
+        std::string dir = getenv("APPDATA");
+        std::replace(dir.begin(), dir.end(), '\\', '/');
+        return dir;
+    } else {
+        std::string userHome = getenv("HOME");
+        if (OS == "osx") {
+            return userHome + "/Library/Application Support";
+        } else {
+            return userHome + "/.config";
+        }
+    }
+}
+
+std::string getConfigDir() {
+    return getAppdataDir() + "/dbo-get";
+}
+
+std::string getConfigFile() {
+    return getConfigDir() + "/global.properties";
+}
+
+std::string getDownloadCache() {
+    return getConfigDir() + "/download-cache";
 }
