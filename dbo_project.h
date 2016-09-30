@@ -40,5 +40,5 @@ class LocalProject : public DboProject {
         LocalProject();
         LocalProject(std::string id, int numId, std::string version, std::vector<std::string>* files);
         std::vector<std::string> getFiles();
-        bool remove(std::string storeLoc);
+        bool remove();
 };

@@ -40,17 +40,12 @@ int main(int argc, char* argv[]) {
     } else if (matchCmd(cmd, CMD_INSTALL)) {
         return install(argc, argv);
     } else if (matchCmd(cmd, CMD_REMOVE)) {
-        if (argc < 3) {
-            tooFewArgs(CMD_REMOVE + "<projects>...");
-            return 1;
-        }
-        err("Command not yet implemented");
-        return 1;
+        return remove(argc, argv);
     } else if (matchCmd(cmd, CMD_UPGRADE)) {
         err("Command not yet implemented");
         return 1;
     } else if (matchCmd(cmd, CMD_HELP)) {
-        err("Command not yet implemented");
+        err("Command not yet implemented.");
         return 1;
     } else {
         err("Invalid command, try `dbo-get help`.");
@@ -75,7 +70,7 @@ int setStore(int argc, char* argv[]) {
     std::replace(path.begin(), path.end(), '\\', '/');
     Config::getInstance().set(Config::KEY_STORE, path);
     makePath(path);
-    print("Successfully set store location as \"" + path + "\"");
+    print("Successfully set store location as \"" + path + "\".");
 
     return 0;
 }
@@ -85,12 +80,15 @@ std::vector<RemoteProject*> resolve(int argc, char* argv[]) {
     bool fail = false;
     curl_global_init(CURL_GLOBAL_ALL);
     for (int i = 0; i < argc - 2; i++) {
-        std::string project = argv[2 + i];
-        RemoteProject* dbo = new RemoteProject(project);
+        std::string id = argv[2 + i];
+        print("Resolving project " + id + "...");
+        RemoteProject* dbo = new RemoteProject(id);
         vec[i] = dbo;
 
-        if (!dbo->resolve()) {
-            err("Failed to resolve project " + project);
+        if (dbo->resolve()) {
+            print("Done resolving " + id + ".");
+        } else {
+            err("Failed to resolve " + id + ".");
             fail = true;
         }
     }
@@ -100,27 +98,74 @@ std::vector<RemoteProject*> resolve(int argc, char* argv[]) {
 
 int install(int argc, char* argv[]) {
     if (argc < 3) {
-        tooFewArgs(CMD_INSTALL + " " + USG_INSTALL);
+        tooFewArgs(CMD_INSTALL, USG_INSTALL);
         return 1;
     }
 
     std::string* loc = Config::getInstance().get(Config::KEY_STORE);
     if (loc == NULL) {
-        err("Store location is not set; please run store command first");
+        err("Store location is not set; please run store command first.");
         return 1;
     }
     makePath(*loc);
 
     std::vector<RemoteProject*> projects = resolve(argc, argv);
     if (projects.size() == 0) {
-        err("No projects specified for installation");
+        err("No projects specified for installation.");
         return 1;
     }
 
     for (size_t i = 0; i < projects.size(); i++) {
+        RemoteProject proj = *projects[i];
+        print("Installing project " + proj.getId() + "...");
         if (!projects[i]->install(*loc)) {
             return 1;
         }
+        print("Done installing " + proj.getId() + ".");
+    }
+
+    StoreFile::getInstance().save();
+
+    return 0;
+}
+
+int remove(int argc, char* argv[]) {
+    if (argc < 3) {
+        tooFewArgs(CMD_REMOVE, USG_REMOVE);
+        return 1;
+    }
+
+    std::string* loc = Config::getInstance().get(Config::KEY_STORE);
+    if (loc == NULL) {
+        err("Store location is not set; please run store command first.");
+        return 1;
+    }
+    makePath(*loc);
+
+    bool fail = false;;
+    std::vector<LocalProject> projects = std::vector<LocalProject>(argc - 2);
+    for (int i = 0; i < argc - 2; i++) {
+        std::string id = argv[i + 2];
+        print("Resolving project " + id + "...");
+        if (StoreFile::getInstance().hasProject(id)) {
+            if (!fail) {
+                projects[i] = *StoreFile::getInstance().getProject(id);
+            }
+        } else {
+            err("No project with ID " + id + " is currently installed.");
+            fail = true;
+        }
+    }
+    if (fail) {
+        err("No projects specified for removal.");
+        return 1;
+    }
+
+    for (size_t i = 0; i < projects.size(); i++) {
+        LocalProject proj = projects[i];
+        print("Removing project " + proj.getId() + "...");
+        proj.remove();
+        print("Done removing " + proj.getId() + ".");
     }
 
     StoreFile::getInstance().save();

@@ -9,6 +9,8 @@ std::vector<RemoteProject*> resolve(int argc, char* argv[]);
 
 int install(int argc, char* argv[]);
 
+int remove(int argc, char* argv[]);
+
 bool matchCmd(char* input, std::string cmd) {
     return std::strcmp(input, cmd.c_str()) == 0;
 }

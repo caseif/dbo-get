@@ -6,6 +6,7 @@
 #include <curl/curl.h>
 #include "json/json.h"
 
+#include "config.h"
 #include "dbo_project.h"
 #include "store_file.h"
 #include "util.h"
@@ -60,8 +61,6 @@ void setOptions(CURL* curl) {
 }
 
 bool RemoteProject::resolve() {
-    print("Resolving project " + getId() + "...");
-
     isResolved = (doLookup() && doQuery());
     return isResolved;
 }
@@ -122,7 +121,7 @@ bool RemoteProject::parseId(std::string json) {
             }
         }
     }
-    err("Could not find project with ID " + getId());
+    err("Could not find project with ID " + getId() + ".");
     if (alts.length() > 0) {
         print("    Possible alternatives: " + alts);
     }
@@ -134,7 +133,7 @@ bool RemoteProject::populateFields(std::string json) {
     std::stringstream contentStream(json);
     contentStream >> root;
     if (root.size() == 0) {
-        err("No artifacts available for project " + getId());
+        err("No artifacts available for project " + getId() + ".");
         return false;
     }
     Json::Value latest = root[root.size() - 1];
@@ -145,7 +144,7 @@ bool RemoteProject::populateFields(std::string json) {
     fileMD5 = latest["md5"].asString();
 
     if (fileUrl == "" || fileName == "" || fileMD5 == "") {
-        err("Failed to fetch metadata of latest artifact for project " + getId());
+        err("Failed to fetch metadata of latest artifact for project " + getId() + ".");
         return false;
     }
     return true;
@@ -158,14 +157,13 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 
 bool RemoteProject::install(std::string storeLoc) {
     assert(isResolved);
-    print("Installing project " + getId() + "...");
     
     CURL* query = curl_easy_init();
     FILE* data;
     errno_t errCode;
     std::string fileName = storeLoc + "/" + getFileName();
     if ((errCode = fopen_s(&data, fileName.c_str(), "w+b")) != 0) {
-        perror("Failed to open destination file for writing");
+        perror("Failed to open destination file for writing.");
         return false;
     }
     curl_easy_setopt(query, CURLOPT_WRITEFUNCTION, write_callback);
@@ -188,8 +186,6 @@ bool RemoteProject::install(std::string storeLoc) {
     files[0] = getFileName();
     StoreFile::getInstance().addProject(&LocalProject(id, numId, version, &files));
 
-    print("Done installing " + getId() + ".");
-
     return true;
 }
 
@@ -208,6 +204,10 @@ std::vector<std::string> LocalProject::getFiles() {
     return LocalProject::files;
 }
 
-bool LocalProject::remove(std::string storeLoc) {
-    return false; //TODO
+bool LocalProject::remove() {
+    for (size_t i = 0; i < getFiles().size(); i++) {
+        std::remove((*Config::getInstance().get(Config::KEY_STORE) + "/" + getFiles()[i]).c_str());
+    }
+    StoreFile::getInstance().removeProject(getId());
+    return true;
 }
