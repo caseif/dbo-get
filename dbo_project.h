@@ -12,7 +12,7 @@ protected:
         std::string getVersion();
 };
 
-class RemoteProject : DboProject {
+class RemoteProject : public DboProject {
     private:
         bool isResolved = false;
         std::string fileUrl;
@@ -33,12 +33,12 @@ class RemoteProject : DboProject {
         bool install(std::string storeLoc);
 };
 
-class LocalProject : DboProject {
+class LocalProject : public DboProject {
     private:
         std::vector<std::string> files;
     public:
         LocalProject();
-        LocalProject(std::string id);
+        LocalProject(std::string id, int numId, std::string version, std::vector<std::string>* files);
         std::vector<std::string> getFiles();
         bool remove(std::string storeLoc);
 };

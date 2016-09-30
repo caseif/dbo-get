@@ -6,9 +6,10 @@
 
 #include <curl/curl.h>
 
-#include "main.h"
-#include "dbo_project.h"
 #include "config.h"
+#include "dbo_project.h"
+#include "main.h"
+#include "store_file.h"
 #include "util.h"
 
 std::string const CMD_STORE = "store";
@@ -73,6 +74,7 @@ int setStore(int argc, char* argv[]) {
     }
     std::replace(path.begin(), path.end(), '\\', '/');
     Config::getInstance().set(Config::KEY_STORE, path);
+    makePath(path);
     print("Successfully set store location as \"" + path + "\"");
 
     return 0;
@@ -120,5 +122,8 @@ int install(int argc, char* argv[]) {
             return 1;
         }
     }
+
+    StoreFile::getInstance().save();
+
     return 0;
 }

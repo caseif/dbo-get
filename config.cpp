@@ -61,8 +61,8 @@ void Config::load() {
 void Config::save() {
     makePath(getConfigDir());
     std::ofstream fileStream(getConfigFile(), std::fstream::trunc);
-    typedef std::map<std::string, std::string>::iterator it_type;
-    for (it_type it = configMap.begin(); it != configMap.end(); it++) {
+    typedef std::map<std::string, std::string>::iterator str_str_map_it;
+    for (str_str_map_it it = configMap.begin(); it != configMap.end(); it++) {
         fileStream << it->first << "=" << it->second << "\n";
     }
     fileStream.close();

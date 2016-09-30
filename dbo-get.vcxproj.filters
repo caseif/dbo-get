@@ -30,6 +30,9 @@
     <ClCompile Include="dbo_project.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="store_file.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="json\json.h">
@@ -48,6 +51,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dbo_project.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="store_file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

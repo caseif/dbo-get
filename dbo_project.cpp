@@ -7,6 +7,7 @@
 #include "json/json.h"
 
 #include "dbo_project.h"
+#include "store_file.h"
 #include "util.h"
 
 std::string const CF_SEARCH_URL = "https://api.curseforge.com/servermods/projects?search=";
@@ -111,11 +112,11 @@ bool RemoteProject::parseId(std::string json) {
     std::string alts = "";
     contentStream >> root;
     for (Json::ArrayIndex i = 0; i < root.size(); i++) {
-        if (root[i].get("slug", "") == getId()) {
-            numId = root[i].get("id", -1).asInt();
+        if (root[i]["slug"] == getId()) {
+            numId = root[i]["id"].asInt();
             return true;
         } else {
-            alts += root[i].get("slug", "").asString();
+            alts += root[i]["slug"].asString();
             if (i < root.size() - 1) {
                 alts += ", ";
             }
@@ -137,11 +138,11 @@ bool RemoteProject::populateFields(std::string json) {
         return false;
     }
     Json::Value latest = root[root.size() - 1];
-    std::string name = latest.get("name", "").asString();
+    std::string name = latest["name"].asString();
     version = parseVersion(name);
-    fileUrl = latest.get("downloadUrl", "").asString();
-    fileName = latest.get("fileName", "").asString();
-    fileMD5 = latest.get("md5", "").asString();
+    fileUrl = latest["downloadUrl"].asString();
+    fileName = latest["fileName"].asString();
+    fileMD5 = latest["md5"].asString();
 
     if (fileUrl == "" || fileName == "" || fileMD5 == "") {
         err("Failed to fetch metadata of latest artifact for project " + getId());
@@ -183,6 +184,10 @@ bool RemoteProject::install(std::string storeLoc) {
     }
     curl_easy_cleanup(query);
 
+    std::vector<std::string> files = std::vector<std::string>(1); //TODO
+    files[0] = getFileName();
+    StoreFile::getInstance().addProject(&LocalProject(id, numId, version, &files));
+
     print("Done installing " + getId() + ".");
 
     return true;
@@ -192,8 +197,11 @@ LocalProject::LocalProject() {
     LocalProject::id = "";
 }
 
-LocalProject::LocalProject(std::string id) {
+LocalProject::LocalProject(std::string id, int numId, std::string version, std::vector<std::string>* files) {
     LocalProject::id = id;
+    LocalProject::numId = numId;
+    LocalProject::version = version;
+    LocalProject::files = *files;
 }
 
 std::vector<std::string> LocalProject::getFiles() {
