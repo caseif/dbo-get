@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <cstring>
 #include <fstream>
+#include <regex>
 #include <string>
 
 #include <curl/curl.h>
@@ -22,7 +23,7 @@ int DboProject::getNumericId() {
     return DboProject::numId;
 }
 
-std::string DboProject::getVersion() {
+int DboProject::getVersion() {
     return DboProject::version;
 }
 
@@ -46,9 +47,20 @@ std::string RemoteProject::getFileMD5() {
     return RemoteProject::fileName;
 }
 
-std::string parseVersion(std::string name) {
-    //TODO
-    return "";
+int RemoteProject::parseVersion(std::string url) {
+    const std::regex r(R"exp(\/(\d(?:\d(?:\d)?)?)\/(\d(?:\d(?:\d)?)?)\/)exp", std::regex_constants::ECMAScript);
+    std::smatch matcher;
+    std::regex_search(url, matcher, r);
+    if (matcher.empty()) {
+        err("Failed to parse file version for project " + getId() + " (matcher failed).");
+        return -1;
+    }
+    try {
+        return std::stoi(matcher[1]) * 1000 + std::stoi(matcher[2]);
+    } catch (std::invalid_argument ex) {
+        err("Failed to parse file version for project " + getId() + " (malformed string).");
+        return -1;
+    }
 }
 
 void setOptions(CURL* curl) {
@@ -138,8 +150,11 @@ bool RemoteProject::populateFields(std::string json) {
     }
     Json::Value latest = root[root.size() - 1];
     std::string name = latest["name"].asString();
-    version = parseVersion(name);
     fileUrl = latest["downloadUrl"].asString();
+    version = parseVersion(fileUrl);
+    if (version == -1) {
+        return false;
+    }
     fileName = latest["fileName"].asString();
     fileMD5 = latest["md5"].asString();
 
@@ -150,7 +165,7 @@ bool RemoteProject::populateFields(std::string json) {
     return true;
 }
 
-size_t write_callback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+static size_t write_callback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
     size_t written = fwrite(ptr, size, nmemb, stream);
     return written;
 }
@@ -209,7 +224,7 @@ void RemoteProject::installFiles() {
 LocalProject::LocalProject() {
 }
 
-LocalProject::LocalProject(std::string id, int numId, std::string version, std::vector<std::string>* files) {
+LocalProject::LocalProject(std::string id, int numId, int version, std::vector<std::string>* files) {
     LocalProject::id = id;
     LocalProject::numId = numId;
     LocalProject::version = version;

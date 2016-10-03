@@ -4,12 +4,12 @@ class DboProject {
 protected:
         std::string id;
         int numId;
-        std::string version;
+        int version;
 
     public:
         std::string getId();
         int getNumericId();
-        std::string getVersion();
+        int getVersion();
 };
 
 class RemoteProject : public DboProject {
@@ -20,6 +20,7 @@ class RemoteProject : public DboProject {
         std::string fileMD5;
 
         void installFiles();
+        int parseVersion(std::string url);
 
     public:
         RemoteProject();
@@ -40,7 +41,7 @@ class LocalProject : public DboProject {
         std::vector<std::string> files;
     public:
         LocalProject();
-        LocalProject(std::string id, int numId, std::string version, std::vector<std::string>* files);
+        LocalProject(std::string id, int numId, int version, std::vector<std::string>* files);
         std::vector<std::string> getFiles();
         bool remove();
 };
