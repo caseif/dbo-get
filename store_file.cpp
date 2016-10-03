@@ -40,8 +40,9 @@ void StoreFile::load() {
         int version = projJson.get("version", "").asInt();
         Json::Value files = projJson.get("files", "");
 
-        std::vector<std::string> fileVec = std::vector<std::string>(files.size());
-        for (Json::ArrayIndex j = 0; j < files.size(); j++) {
+        int size = files.size();
+        std::vector<std::string> fileVec = std::vector<std::string>(size);
+        for (Json::ArrayIndex j = 0; j < size; j++) {
             fileVec[j] = files[i].asString();
         }
 
