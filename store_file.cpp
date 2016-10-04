@@ -35,15 +35,15 @@ void StoreFile::load() {
 
     for (Json::ArrayIndex i = 0; i < root.size(); i++) {
         Json::Value projJson = root[i];
-        std::string id = projJson.get("id", "").asString();
-        int numId = projJson.get("numId", -1).asInt();
-        int version = projJson.get("version", "").asInt();
-        Json::Value files = projJson.get("files", "");
+        std::string id = projJson["id"].asString();
+        int numId = projJson["numId"].asInt();
+        int version = projJson["version"].asInt();
+        Json::Value files = projJson["files"];
 
         int size = files.size();
         std::vector<std::string> fileVec = std::vector<std::string>(size);
         for (Json::ArrayIndex j = 0; j < size; j++) {
-            fileVec[j] = files[i].asString();
+            fileVec[j] = files[j].asString();
         }
 
         projects[id] = LocalProject(id, numId, version, &fileVec);
