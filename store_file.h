@@ -19,7 +19,6 @@ class StoreFile {
 
         void load();
         void save();
-        bool hasProject(std::string id);
         LocalProject* getProject(std::string id);
         void addProject(LocalProject* project);
         void removeProject(std::string id);

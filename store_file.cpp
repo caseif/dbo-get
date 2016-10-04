@@ -77,15 +77,9 @@ void StoreFile::save() {
     fileStream.close();
 }
 
-bool StoreFile::hasProject(std::string id) {
-    assert(initialized);
-    return projects.count(id) != 0;
-}
-
 LocalProject* StoreFile::getProject(std::string id) {
     assert(initialized);
-    assert(hasProject(id));
-    return &projects.at(id);
+    return projects.count(id) != 0  ? &projects.at(id) : NULL;
 }
 
 void StoreFile::addProject(LocalProject* project) {
@@ -95,6 +89,5 @@ void StoreFile::addProject(LocalProject* project) {
 
 void StoreFile::removeProject(std::string id) {
     assert(initialized);
-    assert(hasProject(id));
     projects.erase(id);
 }

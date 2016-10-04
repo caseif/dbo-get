@@ -19,11 +19,13 @@ std::string const CMD_UPGRADE = "upgrade";
 std::string const CMD_HELP = "help";
 std::string const cmds[] = {CMD_STORE, CMD_INSTALL, CMD_REMOVE, CMD_UPGRADE, CMD_HELP};
 
-std::string const USG_STORE = "[location]";
-std::string const USG_INSTALL = "<projects>...";
-std::string const USG_UPGRADE = "";
-std::string const USG_REMOVE = "<projects>...";
-std::string const USG_HELP = "[command]";
+static std::string const USG_STORE = "[location]";
+static std::string const USG_INSTALL = "<projects>...";
+static std::string const USG_UPGRADE = "";
+static std::string const USG_REMOVE = "<projects>...";
+static std::string const USG_HELP = "[command]";
+
+static std::vector<RemoteProject*>* const EMPTY_RPP_VEC = new std::vector<RemoteProject*>(0);
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -80,22 +82,30 @@ std::vector<RemoteProject*>* resolve(int argc, char* argv[]) {
 
     std::vector<RemoteProject*>* vec = new std::vector<RemoteProject*>(argc - 2);
     bool fail = false;
+    bool empty = true;
     curl_global_init(CURL_GLOBAL_ALL);
     for (int i = 0; i < argc - 2; i++) {
         std::string id = argv[2 + i];
         print("Resolving project " + id + "...");
-        RemoteProject* dbo = new RemoteProject(id);
-        (*vec)[i] = dbo;
+        RemoteProject* remote = new RemoteProject(id);
 
-        if (dbo->resolve()) {
-            print("Done resolving " + id + ".");
-        } else {
+        if (!remote->resolve()) {
             err("Failed to resolve " + id + ".");
             fail = true;
+            return NULL;
         }
+
+        LocalProject* local = StoreFile::getInstance().getProject(id);
+
+        if (local == NULL || remote->getVersion() > local->getVersion()) {
+            (*vec)[i] = remote;
+            empty = false;
+        }
+
+        print("Done resolving " + id + ".");
     }
     curl_global_cleanup();
-    return fail ? NULL : vec;
+    return fail ? NULL : (!empty ? vec : EMPTY_RPP_VEC);
 }
 
 int install(int argc, char* argv[]) {
@@ -111,21 +121,27 @@ int install(int argc, char* argv[]) {
     }
     makePath(*loc);
 
-    std::vector<RemoteProject*> projects = *resolve(argc, argv);
-    if (projects.size() == 0) {
+    std::vector<RemoteProject*>* projects = resolve(argc, argv);
+
+    if (projects == NULL) {
         err("No projects specified for installation.");
         return 1;
     }
 
+    if (projects->empty()) {
+        print("Already up-to-date.");
+        return 0;
+    }
+
     print("Installing projects...");
 
-    for (size_t i = 0; i < projects.size(); i++) {
-        RemoteProject proj = *projects[i];
-        print("Installing project " + proj.getId() + "...");
-        if (!projects[i]->install()) {
+    for (size_t i = 0; i < projects->size(); i++) {
+        RemoteProject* proj = (*projects)[i];
+        print("Installing project " + proj->getId() + "...");
+        if (!proj->install()) {
             return 1;
         }
-        print("Done installing " + proj.getId() + ".");
+        print("Done installing " + proj->getId() + ".");
     }
 
     StoreFile::getInstance().save();
@@ -151,9 +167,10 @@ int remove(int argc, char* argv[]) {
     for (int i = 0; i < argc - 2; i++) {
         std::string id = argv[i + 2];
         print("Resolving project " + id + "...");
-        if (StoreFile::getInstance().hasProject(id)) {
+        LocalProject* proj = StoreFile::getInstance().getProject(id);
+        if (proj != NULL) {
             if (!fail) {
-                projects[i] = *StoreFile::getInstance().getProject(id);
+                projects[i] = *proj;
             }
         } else {
             err("No project with ID " + id + " is currently installed.");
