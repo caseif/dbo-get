@@ -5,7 +5,7 @@
 
 int setStore(int argc, char* argv[]);
 
-std::vector<RemoteProject*> resolve(int argc, char* argv[]);
+std::vector<RemoteProject*>* resolve(int argc, char* argv[]);
 
 int install(int argc, char* argv[]);
 
