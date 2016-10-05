@@ -12,6 +12,8 @@
 #include "store_file.h"
 #include "util.h"
 
+static const int INSTALL_DIALOG_LINE_LENGTH = 80;
+
 std::string const CMD_STORE = "store";
 std::string const CMD_INSTALL = "install";
 std::string const CMD_REMOVE = "remove";
@@ -108,6 +110,66 @@ std::vector<RemoteProject*>* resolve(int argc, char* argv[]) {
     return fail ? NULL : (!empty ? vec : EMPTY_RPP_VEC);
 }
 
+void printDialog(std::vector<RemoteProject*>* projects) {
+    std::vector<std::string> upgradeList = std::vector<std::string>(projects->size());
+    std::vector<std::string> installList = std::vector<std::string>(projects->size());
+    int ui = 0;
+    int ii = 0;
+    int nu = 0;
+    for (size_t i = 0; i < projects->size(); i++) {
+        RemoteProject* remote = (*projects)[i];
+        if (remote == NULL) {
+            nu++;
+            continue;
+        }
+        LocalProject* local = StoreFile::getInstance().getProject(remote->getId());
+        if (local != NULL) {
+            upgradeList[ui++] = remote->getId();
+        } else {
+            installList[ii++] = remote->getId();
+        }
+    }
+
+    if (ui > 0) {
+        print("The following projects will be upgraded:");
+        std::string line = "  ";
+        for (size_t i = 0; i < upgradeList.size(); i++) {
+            if (upgradeList[i] == "") {
+                break;
+            }
+            std::string newLine = line + upgradeList[i];
+            if (line.length() + 1 > INSTALL_DIALOG_LINE_LENGTH) {
+                print(line);
+                line = "  " + upgradeList[i];
+            } else {
+                line = newLine + " ";
+            }
+        }
+        print(line);
+    }
+
+    if (ii > 0) {
+        print("The following projects will be newly installed:");
+        std::string line = "  ";
+        for (size_t i = 0; i < installList.size(); i++) {
+            if (installList[i] == "") {
+                break;
+            }
+            std::string newLine = line + installList[i];
+            if (line.length() + 1 > INSTALL_DIALOG_LINE_LENGTH) {
+                print(line);
+                line = "  " + installList[i] + " ";
+            } else {
+                line = newLine + " ";
+            }
+        }
+        print(line);
+    }
+
+    print(std::to_string(ui) + " upgraded, " + std::to_string(ii) + " newly installed, 0 to remove, "
+        + std::to_string(nu) + " not upgraded.");
+}
+
 int install(int argc, char* argv[]) {
     if (argc < 3) {
         tooFewArgs(CMD_INSTALL, USG_INSTALL);
@@ -133,11 +195,20 @@ int install(int argc, char* argv[]) {
         return 0;
     }
 
-    print("Installing projects...");
+    printDialog(projects);
 
     for (size_t i = 0; i < projects->size(); i++) {
         RemoteProject* proj = (*projects)[i];
-        print("Installing project " + proj->getId() + "...");
+        if (proj == NULL) {
+            continue;
+        }
+
+        LocalProject* local = StoreFile::getInstance().getProject(proj->getId());
+        if (local != NULL) {
+            print("Upgrading project " + proj->getId() + " (#" + std::to_string(local->getVersion()) + " -> #" + std::to_string(proj->getVersion()) + ").");
+        } else {
+            print("Installing project " + proj->getId() + "...");
+        }
         if (!proj->install()) {
             return 1;
         }
