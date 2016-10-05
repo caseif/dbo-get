@@ -19,7 +19,8 @@ std::string const CMD_INSTALL = "install";
 std::string const CMD_REMOVE = "remove";
 std::string const CMD_UPGRADE = "upgrade";
 std::string const CMD_HELP = "help";
-std::string const cmds[] = {CMD_STORE, CMD_INSTALL, CMD_REMOVE, CMD_UPGRADE, CMD_HELP};
+std::string const CMD_MOO = "moo";
+std::string const cmds[] = {CMD_STORE, CMD_INSTALL, CMD_REMOVE, CMD_UPGRADE, CMD_HELP, CMD_MOO};
 
 static std::string const USG_STORE = "[location]";
 static std::string const USG_INSTALL = "<projects>...";
@@ -51,6 +52,8 @@ int main(int argc, char* argv[]) {
     } else if (matchCmd(cmd, CMD_HELP)) {
         err("Command not yet implemented.");
         return 1;
+    } else if (matchCmd(cmd, CMD_MOO)) {
+        print("Yes, you're very clever.");
     } else {
         err("Invalid command, try `dbo-get help`.");
         return 1;
