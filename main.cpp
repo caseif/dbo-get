@@ -113,64 +113,65 @@ std::vector<RemoteProject*>* resolve(int argc, char* argv[]) {
     return fail ? NULL : (!empty ? vec : EMPTY_RPP_VEC);
 }
 
-void printDialog(std::vector<RemoteProject*>* projects) {
-    std::vector<std::string> upgradeList = std::vector<std::string>(projects->size());
-    std::vector<std::string> installList = std::vector<std::string>(projects->size());
-    int ui = 0;
-    int ii = 0;
-    int nu = 0;
-    for (size_t i = 0; i < projects->size(); i++) {
-        RemoteProject* remote = (*projects)[i];
-        if (remote == NULL) {
-            nu++;
-            continue;
+static void printDialogListing(std::vector<std::string> projects) {
+    std::string line = "  ";
+    for (size_t i = 0; i < projects.size(); i++) {
+        if (projects[i] == "") {
+            break;
         }
-        LocalProject* local = StoreFile::getInstance().getProject(remote->getId());
-        if (local != NULL) {
-            upgradeList[ui++] = remote->getId();
+        std::string newLine = line + projects[i];
+        if (line.length() + 1 > INSTALL_DIALOG_LINE_LENGTH) {
+            print(line);
+            line = "  " + projects[i];
         } else {
-            installList[ii++] = remote->getId();
+            line = newLine + " ";
         }
     }
+    print(line);
+}
 
-    if (ui > 0) {
-        print("The following projects will be upgraded:");
-        std::string line = "  ";
-        for (size_t i = 0; i < upgradeList.size(); i++) {
-            if (upgradeList[i] == "") {
-                break;
+static void printInstallDialog(std::vector<RemoteProject*>* projects) {
+        std::vector<std::string> upgradeList = std::vector<std::string>(projects->size());
+        std::vector<std::string> installList = std::vector<std::string>(projects->size());
+        int ui = 0;
+        int ii = 0;
+        int nu = 0;
+        for (size_t i = 0; i < projects->size(); i++) {
+            RemoteProject* remote = (*projects)[i];
+            if (remote == NULL) {
+                nu++;
+                continue;
             }
-            std::string newLine = line + upgradeList[i];
-            if (line.length() + 1 > INSTALL_DIALOG_LINE_LENGTH) {
-                print(line);
-                line = "  " + upgradeList[i];
+            LocalProject* local = StoreFile::getInstance().getProject(remote->getId());
+            if (local != NULL) {
+                upgradeList[ui++] = remote->getId();
             } else {
-                line = newLine + " ";
+                installList[ii++] = remote->getId();
             }
         }
-        print(line);
-    }
 
-    if (ii > 0) {
-        print("The following projects will be newly installed:");
-        std::string line = "  ";
-        for (size_t i = 0; i < installList.size(); i++) {
-            if (installList[i] == "") {
-                break;
-            }
-            std::string newLine = line + installList[i];
-            if (line.length() + 1 > INSTALL_DIALOG_LINE_LENGTH) {
-                print(line);
-                line = "  " + installList[i] + " ";
-            } else {
-                line = newLine + " ";
-            }
+        if (ui > 0) {
+            print("The following projects will be upgraded:");
+            printDialogListing(upgradeList);
         }
-        print(line);
-    }
 
-    print(std::to_string(ui) + " upgraded, " + std::to_string(ii) + " newly installed, 0 to remove, "
-        + std::to_string(nu) + " not upgraded.");
+        if (ii > 0) {
+            print("The following projects will be newly installed:");
+            printDialogListing(installList);
+        }
+
+        print(std::to_string(ui) + " upgraded, " + std::to_string(ii) + " newly installed, 0 to remove, "
+            + std::to_string(nu) + " not upgraded.");
+}
+
+static void printRemoveDialog(std::vector<LocalProject>* projects) {
+    std::vector<std::string> removeList = std::vector<std::string>(projects->size());
+    for (size_t i = 0; i < projects->size(); i++) {
+        removeList[i] = (*projects)[i].getId();
+    }
+    printDialogListing(removeList);
+
+    print("0 upgraded, 0 newly installed, " + std::to_string(projects->size()) + " to remove, 0 not upgraded.");
 }
 
 int install(int argc, char* argv[]) {
@@ -198,7 +199,7 @@ int install(int argc, char* argv[]) {
         return 0;
     }
 
-    printDialog(projects);
+    printInstallDialog(projects);
 
     for (size_t i = 0; i < projects->size(); i++) {
         RemoteProject* proj = (*projects)[i];
@@ -255,6 +256,8 @@ int remove(int argc, char* argv[]) {
         err("No projects specified for removal.");
         return 1;
     }
+
+    printRemoveDialog(&projects);
 
     for (size_t i = 0; i < projects.size(); i++) {
         LocalProject proj = projects[i];
