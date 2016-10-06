@@ -210,11 +210,15 @@ int install(int argc, char* argv[]) {
         LocalProject* local = StoreFile::getInstance().getProject(proj->getId());
         if (local != NULL) {
             print("Upgrading project " + proj->getId() + " (#" + std::to_string(local->getVersion()) + " -> #" + std::to_string(proj->getVersion()) + ").");
+            if (!local->remove() && !proj->install()) {
+                //TODO: this shit ain't atomic
+                return 1;
+            }
         } else {
             print("Installing project " + proj->getId() + "...");
-        }
-        if (!proj->install()) {
-            return 1;
+            if (!proj->install()) {
+                return 1;
+            }
         }
         print("Done installing " + proj->getId() + ".");
     }
