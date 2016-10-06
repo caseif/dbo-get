@@ -43,9 +43,9 @@ int main(int argc, char* argv[]) {
     if (matchCmd(cmd, CMD_STORE)) {
         return setStore(argc, argv);
     } else if (matchCmd(cmd, CMD_INSTALL)) {
-        return install(argc, argv);
+        return handleInstallCmd(argc, argv);
     } else if (matchCmd(cmd, CMD_REMOVE)) {
-        return remove(argc, argv);
+        return handleRemoveCmd(argc, argv);
     } else if (matchCmd(cmd, CMD_UPGRADE)) {
         err("Command not yet implemented");
         return 1;
@@ -60,6 +60,17 @@ int main(int argc, char* argv[]) {
     }
 }
 
+std::vector<std::string>* parseParams(int argc, char* argv[]) {
+    std::vector<std::string>* params = new std::vector<std::string>(argc - 2);
+    int j = 0;
+    for (int i = 2; i < argc; i++) {
+        if (argv[i][0] != '-') {
+            (*params)[j++] = argv[i];
+        }
+    }
+    return params;
+}
+
 int setStore(int argc, char* argv[]) {
     if (argc < 3) {
         std::string* loc = Config::getInstance().get(Config::KEY_STORE);
@@ -68,12 +79,14 @@ int setStore(int argc, char* argv[]) {
     }
 
     std::string path = "";
-    for (int i = 2; i < argc; i++) {
-        path += argv[i];
-        if (i < argc - 1) {
+    std::vector<std::string>* params = parseParams(argc, argv);
+    for (int i = 0; i < params->size(); i++) {
+        path += (*params)[i];
+        if (i < params->size() - 1) {
             path += " ";
         }
     }
+    delete(params);
     std::replace(path.begin(), path.end(), '\\', '/');
     Config::getInstance().set(Config::KEY_STORE, path);
     makePath(path);
@@ -82,15 +95,15 @@ int setStore(int argc, char* argv[]) {
     return 0;
 }
 
-std::vector<RemoteProject*>* resolve(int argc, char* argv[]) {
+std::vector<RemoteProject*>* resolve(std::vector<std::string>* projects) {
     print("Resolving projects...");
 
-    std::vector<RemoteProject*>* vec = new std::vector<RemoteProject*>(argc - 2);
+    std::vector<RemoteProject*>* vec = new std::vector<RemoteProject*>(projects->size());
     bool fail = false;
     bool empty = true;
     curl_global_init(CURL_GLOBAL_ALL);
-    for (int i = 0; i < argc - 2; i++) {
-        std::string id = argv[2 + i];
+    for (int i = 0; i < projects->size(); i++) {
+        std::string id = (*projects)[i];
         print("Resolving project " + id + "...");
         RemoteProject* remote = new RemoteProject(id);
 
@@ -174,12 +187,16 @@ static void printRemoveDialog(std::vector<LocalProject>* projects) {
     print("0 upgraded, 0 newly installed, " + std::to_string(projects->size()) + " to remove, 0 not upgraded.");
 }
 
-int install(int argc, char* argv[]) {
+int handleInstallCmd(int argc, char* argv[]) {
     if (argc < 3) {
         tooFewArgs(CMD_INSTALL, USG_INSTALL);
         return 1;
     }
+    std::vector<std::string>* projects = parseParams(argc, argv);
+    install(projects);
+}
 
+int install(std::vector<std::string>* projects) {
     std::string* loc = Config::getInstance().get(Config::KEY_STORE);
     if (loc == NULL) {
         err("Store location is not set; please run store command first.");
@@ -187,22 +204,24 @@ int install(int argc, char* argv[]) {
     }
     makePath(*loc);
 
-    std::vector<RemoteProject*>* projects = resolve(argc, argv);
+    std::vector<RemoteProject*>* resolved = resolve(projects);
 
-    if (projects == NULL) {
+    delete(projects);
+
+    if (resolved == NULL) {
         err("No projects specified for installation.");
         return 1;
     }
 
-    if (projects->empty()) {
+    if (resolved->empty()) {
         print("Already up-to-date.");
         return 0;
     }
 
-    printInstallDialog(projects);
+    printInstallDialog(resolved);
 
-    for (size_t i = 0; i < projects->size(); i++) {
-        RemoteProject* proj = (*projects)[i];
+    for (size_t i = 0; i < resolved->size(); i++) {
+        RemoteProject* proj = (*resolved)[i];
         if (proj == NULL) {
             continue;
         }
@@ -228,12 +247,14 @@ int install(int argc, char* argv[]) {
     return 0;
 }
 
-int remove(int argc, char* argv[]) {
+int handleRemoveCmd(int argc, char* argv[]) {
     if (argc < 3) {
         tooFewArgs(CMD_REMOVE, USG_REMOVE);
         return 1;
     }
+}
 
+int remove(std::vector<std::string>* projects) {
     std::string* loc = Config::getInstance().get(Config::KEY_STORE);
     if (loc == NULL) {
         err("Store location is not set; please run store command first.");
@@ -242,29 +263,32 @@ int remove(int argc, char* argv[]) {
     makePath(*loc);
 
     bool fail = false;;
-    std::vector<LocalProject> projects = std::vector<LocalProject>(argc - 2);
-    for (int i = 0; i < argc - 2; i++) {
-        std::string id = argv[i + 2];
+    std::vector<LocalProject> resolved = std::vector<LocalProject>(projects->size());
+    for (int i = 0; i < projects->size(); i++) {
+        std::string id = (*projects)[i];
         print("Resolving project " + id + "...");
         LocalProject* proj = StoreFile::getInstance().getProject(id);
         if (proj != NULL) {
             if (!fail) {
-                projects[i] = *proj;
+                resolved[i] = *proj;
             }
         } else {
             err("No project with ID " + id + " is currently installed.");
             fail = true;
         }
     }
+
+    delete(projects);
+
     if (fail) {
         err("No projects specified for removal.");
         return 1;
     }
 
-    printRemoveDialog(&projects);
+    printRemoveDialog(&resolved);
 
-    for (size_t i = 0; i < projects.size(); i++) {
-        LocalProject proj = projects[i];
+    for (size_t i = 0; i < resolved.size(); i++) {
+        LocalProject proj = resolved[i];
         print("Removing project " + proj.getId() + "...");
         proj.remove();
         print("Done removing " + proj.getId() + ".");
