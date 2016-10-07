@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+
+#include "command.h"
 #include "dbo_project.h"
 
 std::vector<std::string>* parseParams(int argc, char* argv[]);
@@ -13,6 +15,8 @@ int handleHelpCmd(int argc, char* argv[]);
 int handleMooCmd(int argc, char* argv[]);
 
 int setStore(int argc, char* argv[]);
+void printInfoHeader();
+void printHelp(Command* cmd);
 
 std::vector<RemoteProject*>* resolve(std::vector<std::string>* projects, bool ignoreFail);
 

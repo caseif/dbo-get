@@ -15,14 +15,23 @@
 #include "store_file.h"
 #include "util.h"
 
-static const int INSTALL_DIALOG_LINE_LENGTH = 80;
+static const std::string VERSION = "0.0.0-SNAPSHOT";
 
-Command* const CMD_STORE = new Command("store", "[location]", "desc", &handleStoreCmd);
-Command* const CMD_INSTALL = new Command("install", "<projects>...", "desc", &handleInstallCmd);
-Command* const CMD_UPGRADE = new Command("upgrade", "", "desc", &handleUpgradeCmd);
-Command* const CMD_REMOVE = new Command("remove", "<projects>...", "desc", &handleRemoveCmd);
-Command* const CMD_HELP = new Command("help", "[command]", "desc", &handleHelpCmd);
-Command* const CMD_MOO = new Command("moo", "", "desc", &handleMooCmd, false);
+static const int INSTALL_DIALOG_LINE_LENGTH = 80;
+static const int HELP_INDENT_SIZE = 10;
+
+Command* const CMD_STORE = new Command("store", "[location]",
+        "Gets or sets the current store location.", &handleStoreCmd);
+Command* const CMD_INSTALL = new Command("install", "<projects>...",
+        "Installs or upgrades the specified projects to the current store.", &handleInstallCmd);
+Command* const CMD_UPGRADE = new Command("upgrade", "",
+        "Attempts to upgrade all projects installed to the current store.", &handleUpgradeCmd);
+Command* const CMD_REMOVE = new Command("remove", "<projects>...",
+        "Removes the specified projects from the current store.", &handleRemoveCmd);
+Command* const CMD_HELP = new Command("help", "[command]",
+        "Displays help for one or all commands.", &handleHelpCmd);
+Command* const CMD_MOO = new Command("moo", "",
+        "Have you mooed today?", &handleMooCmd, false);
 Command* const CMDS[] = {CMD_STORE, CMD_INSTALL, CMD_REMOVE, CMD_UPGRADE, CMD_HELP, CMD_MOO};
 
 static std::vector<RemoteProject*>* const EMPTY_RPP_VEC = new std::vector<RemoteProject*>(0);
@@ -38,8 +47,7 @@ int main(int argc, char* argv[]) {
 
     char* cmd = argv[1];
     for (auto it = std::begin(CMDS); it != std::end(CMDS); ++it) {
-        std::string label = (*it)->getLabel();
-        if (matchCmd(cmd, label)) {
+        if (matchCmd(cmd, (*it)->getLabel())) {
             return (*it)->getHandler()(argc, argv);
         }
     }
@@ -136,7 +144,7 @@ int handleInstallCmd(int argc, char* argv[]) {
         return 1;
     }
     std::vector<std::string>* projects = parseParams(argc, argv);
-    install(projects, false);
+    return install(projects, false);
 }
 
 int handleUpgradeCmd(int argc, char* argv[]) {
@@ -145,20 +153,65 @@ int handleUpgradeCmd(int argc, char* argv[]) {
         return 1;
     }
     std::vector<std::string>* projects = StoreFile::getInstance().getProjectIds();
-    install(projects, true);
+    return install(projects, true);
+}
+
+int handleRemoveCmd(int argc, char* argv[]) {
+    if (argc < 3) {
+        tooFewArgs(CMD_REMOVE->getLabel(), CMD_REMOVE->getUsage());
+        return 1;
+    }
+    return remove(parseParams(argc, argv));
 }
 
 int handleHelpCmd(int argc, char* argv[]) {
     if (argc == 2) {
-        //TODO print all help
+        printInfoHeader();
+        for (auto it = std::begin(CMDS); it != std::end(CMDS); ++it) {
+            if ((*it)->isDocumented()) {
+                printHelp(*it);
+            }
+        }
         return 0;
     } else if (argc == 3) {
-        //TODO print help for specific cmd
-        return 0;
+        for (auto it = std::begin(CMDS); it != std::end(CMDS); ++it) {
+            if (matchCmd(argv[2], (*it)->getLabel())) {
+                if (!(*it)->isDocumented()) {
+                    break;
+                }
+                printHelp(*it);
+                return 0;
+            }
+        }
+        err("Cannot display help: invalid command specified.");
+        return 1;
     } else {
         tooManyArgs(CMD_HELP->getLabel(), CMD_HELP->getUsage());
         return 1;
     }
+}
+
+void printInfoHeader() {
+    print("dbo-get v" + VERSION + ".");
+    print("Copyright (c) 2016 Max Roncace.");
+    print("");
+    print("dbo-get is a utility for installing and managing projects hosted by BukkitDev,");
+    print("the premier hosting service for Bukkit software.");
+    print("");
+    print("Commands:");
+}
+
+void printHelp(Command* cmd) {
+    std::string indent = "";
+    for (int i = cmd->getLabel().length(); i < HELP_INDENT_SIZE; i++) {
+        indent += " ";
+    }
+    print("  " + cmd->getLabel() + indent + cmd->getDescription());
+    std::string indent2 = indent;
+    for (int i = 0; i < cmd->getLabel().length() + 4; i++) {
+        indent2 += " ";
+    }
+    print(indent2 + "Usage: dbo-get " + cmd->getLabel() + " " + cmd->getUsage());
 }
 
 int handleMooCmd(int argc, char* argv[]) {
@@ -215,13 +268,6 @@ int install(std::vector<std::string>* projects, bool ignoreFail) {
     StoreFile::getInstance().save();
 
     return 0;
-}
-
-int handleRemoveCmd(int argc, char* argv[]) {
-    if (argc < 3) {
-        tooFewArgs(CMD_REMOVE->getLabel(), CMD_REMOVE->getUsage());
-        return 1;
-    }
 }
 
 int remove(std::vector<std::string>* projects) {
