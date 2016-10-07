@@ -1,11 +1,14 @@
 #include <algorithm>
 #include <cstring>
+#include <functional>
 #include <iostream>
+#include <iterator>
 #include <string>
 #include <vector>
 
 #include <curl/curl.h>
 
+#include "command.h"
 #include "config.h"
 #include "dbo_project.h"
 #include "main.h"
@@ -14,19 +17,13 @@
 
 static const int INSTALL_DIALOG_LINE_LENGTH = 80;
 
-std::string const CMD_STORE = "store";
-std::string const CMD_INSTALL = "install";
-std::string const CMD_REMOVE = "remove";
-std::string const CMD_UPGRADE = "upgrade";
-std::string const CMD_HELP = "help";
-std::string const CMD_MOO = "moo";
-std::string const cmds[] = {CMD_STORE, CMD_INSTALL, CMD_REMOVE, CMD_UPGRADE, CMD_HELP, CMD_MOO};
-
-static std::string const USG_STORE = "[location]";
-static std::string const USG_INSTALL = "<projects>...";
-static std::string const USG_UPGRADE = "";
-static std::string const USG_REMOVE = "<projects>...";
-static std::string const USG_HELP = "[command]";
+Command* const CMD_STORE = new Command("store", "[location]", "desc", &handleStoreCmd);
+Command* const CMD_INSTALL = new Command("install", "<projects>...", "desc", &handleInstallCmd);
+Command* const CMD_UPGRADE = new Command("upgrade", "", "desc", &handleUpgradeCmd);
+Command* const CMD_REMOVE = new Command("remove", "<projects>...", "desc", &handleRemoveCmd);
+Command* const CMD_HELP = new Command("help", "[command]", "desc", &handleHelpCmd);
+Command* const CMD_MOO = new Command("moo", "", "desc", &handleMooCmd, false);
+Command* const CMDS[] = {CMD_STORE, CMD_INSTALL, CMD_REMOVE, CMD_UPGRADE, CMD_HELP, CMD_MOO};
 
 static std::vector<RemoteProject*>* const EMPTY_RPP_VEC = new std::vector<RemoteProject*>(0);
 
@@ -40,24 +37,14 @@ int main(int argc, char* argv[]) {
     Config::getInstance().load();
 
     char* cmd = argv[1];
-    if (matchCmd(cmd, CMD_STORE)) {
-        return setStore(argc, argv);
-    } else if (matchCmd(cmd, CMD_INSTALL)) {
-        return handleInstallCmd(argc, argv);
-    } else if (matchCmd(cmd, CMD_REMOVE)) {
-        return handleRemoveCmd(argc, argv);
-    } else if (matchCmd(cmd, CMD_UPGRADE)) {
-        return handleUpgradeCmd(argc, argv);
-        return 1;
-    } else if (matchCmd(cmd, CMD_HELP)) {
-        err("Command not yet implemented.");
-        return 1;
-    } else if (matchCmd(cmd, CMD_MOO)) {
-        print("Yes, you're very clever.");
-    } else {
-        err("Invalid command, try `dbo-get help`.");
-        return 1;
+    for (auto it = std::begin(CMDS); it != std::end(CMDS); ++it) {
+        std::string label = (*it)->getLabel();
+        if (matchCmd(cmd, label)) {
+            return (*it)->getHandler()(argc, argv);
+        }
     }
+    err("Invalid command, try `dbo-get help`.");
+    return 1;
 }
 
 std::vector<std::string>* parseParams(int argc, char* argv[]) {
@@ -71,7 +58,7 @@ std::vector<std::string>* parseParams(int argc, char* argv[]) {
     return params;
 }
 
-int setStore(int argc, char* argv[]) {
+int handleStoreCmd(int argc, char* argv[]) {
     if (argc < 3) {
         std::string* loc = Config::getInstance().get(Config::KEY_STORE);
         print("Current store location: " + (loc == NULL ? "NOT SET" : *loc));
@@ -145,7 +132,7 @@ static void printDialogListing(std::vector<std::string> projects) {
 
 int handleInstallCmd(int argc, char* argv[]) {
     if (argc < 3) {
-        tooFewArgs(CMD_INSTALL, USG_INSTALL);
+        tooFewArgs(CMD_INSTALL->getLabel(), CMD_INSTALL->getUsage());
         return 1;
     }
     std::vector<std::string>* projects = parseParams(argc, argv);
@@ -154,11 +141,29 @@ int handleInstallCmd(int argc, char* argv[]) {
 
 int handleUpgradeCmd(int argc, char* argv[]) {
     if (argc >= 3) {
-        tooFewArgs(CMD_UPGRADE, USG_UPGRADE);
+        tooFewArgs(CMD_UPGRADE->getLabel(), CMD_UPGRADE->getUsage());
         return 1;
     }
     std::vector<std::string>* projects = StoreFile::getInstance().getProjectIds();
     install(projects, true);
+}
+
+int handleHelpCmd(int argc, char* argv[]) {
+    if (argc == 2) {
+        //TODO print all help
+        return 0;
+    } else if (argc == 3) {
+        //TODO print help for specific cmd
+        return 0;
+    } else {
+        tooManyArgs(CMD_HELP->getLabel(), CMD_HELP->getUsage());
+        return 1;
+    }
+}
+
+int handleMooCmd(int argc, char* argv[]) {
+    print("Yes, you're very clever.");
+    return 0;
 }
 
 int install(std::vector<std::string>* projects, bool ignoreFail) {
@@ -214,7 +219,7 @@ int install(std::vector<std::string>* projects, bool ignoreFail) {
 
 int handleRemoveCmd(int argc, char* argv[]) {
     if (argc < 3) {
-        tooFewArgs(CMD_REMOVE, USG_REMOVE);
+        tooFewArgs(CMD_REMOVE->getLabel(), CMD_REMOVE->getUsage());
         return 1;
     }
 }

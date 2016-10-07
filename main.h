@@ -5,9 +5,12 @@
 
 std::vector<std::string>* parseParams(int argc, char* argv[]);
 
+int handleStoreCmd(int argc, char* argv[]);
 int handleInstallCmd(int argc, char* argv[]);
 int handleUpgradeCmd(int argc, char* argv[]);
 int handleRemoveCmd(int argc, char* argv[]);
+int handleHelpCmd(int argc, char* argv[]);
+int handleMooCmd(int argc, char* argv[]);
 
 int setStore(int argc, char* argv[]);
 
