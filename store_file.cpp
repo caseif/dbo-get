@@ -8,6 +8,8 @@
 #include "store_file.h"
 #include "util.h"
 
+typedef std::map<std::string, LocalProject>::iterator str_locProj_map_it;
+
 StoreFile::StoreFile() {
     projects = std::map<std::string, LocalProject>();
     load();
@@ -55,7 +57,6 @@ void StoreFile::load() {
 void StoreFile::save() {
     Json::Value root = Json::Value();
     Json::ArrayIndex ind = 0;
-    typedef std::map<std::string, LocalProject>::iterator str_locProj_map_it;
     for (str_locProj_map_it it = projects.begin(); it != projects.end(); it++) {
         Json::Value projJson = Json::Value();
         projJson["id"] = it->second.getId();
@@ -80,6 +81,28 @@ void StoreFile::save() {
 LocalProject* StoreFile::getProject(std::string id) {
     assert(initialized);
     return projects.count(id) != 0  ? &projects.at(id) : NULL;
+}
+
+std::vector<LocalProject*>* StoreFile::getProjects() {
+    assert(initialized);
+    std::vector<LocalProject*>* vec = new std::vector<LocalProject*>(projects.size());
+    typedef std::map<std::string, LocalProject>::iterator str_locProj_map_it;
+    int i = 0;
+    for (str_locProj_map_it it = projects.begin(); it != projects.end(); it++) {
+        (*vec)[i++] = &it->second;
+    }
+    return vec;
+}
+
+std::vector<std::string>* StoreFile::getProjectIds() {
+    assert(initialized);
+    std::vector<std::string>* vec = new std::vector<std::string>(projects.size());
+    typedef std::map<std::string, LocalProject>::iterator str_locProj_map_it;
+    int i = 0;
+    for (str_locProj_map_it it = projects.begin(); it != projects.end(); it++) {
+        (*vec)[i++] = it->second.getId();
+    }
+    return vec;
 }
 
 void StoreFile::addProject(LocalProject* project) {

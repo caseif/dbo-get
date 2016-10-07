@@ -28,6 +28,11 @@ inline void tooFewArgs(std::string command, std::string usage) {
     print("    Usage: dbo-get " + command + " " + usage);
 }
 
+inline void tooManyArgs(std::string command, std::string usage) {
+    err("Too many args!");
+    print("    Usage: dbo-get " + command + " " + usage);
+}
+
 size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb, std::string *s);
 
 std::vector<std::string> explode(std::string const & s, char delim);

@@ -20,6 +20,8 @@ class StoreFile {
         void load();
         void save();
         LocalProject* getProject(std::string id);
+        std::vector<LocalProject*>* getProjects();
+        std::vector<std::string>* getProjectIds();
         void addProject(LocalProject* project);
         void removeProject(std::string id);
 };

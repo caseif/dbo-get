@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
     } else if (matchCmd(cmd, CMD_REMOVE)) {
         return handleRemoveCmd(argc, argv);
     } else if (matchCmd(cmd, CMD_UPGRADE)) {
-        err("Command not yet implemented");
+        return handleUpgradeCmd(argc, argv);
         return 1;
     } else if (matchCmd(cmd, CMD_HELP)) {
         err("Command not yet implemented.");
@@ -95,7 +95,7 @@ int setStore(int argc, char* argv[]) {
     return 0;
 }
 
-std::vector<RemoteProject*>* resolve(std::vector<std::string>* projects) {
+std::vector<RemoteProject*>* resolve(std::vector<std::string>* projects, bool ignoreFail) {
     print("Resolving projects...");
 
     std::vector<RemoteProject*>* vec = new std::vector<RemoteProject*>(projects->size());
@@ -107,7 +107,7 @@ std::vector<RemoteProject*>* resolve(std::vector<std::string>* projects) {
         print("Resolving project " + id + "...");
         RemoteProject* remote = new RemoteProject(id);
 
-        if (!remote->resolve()) {
+        if (!remote->resolve() && !ignoreFail) {
             err("Failed to resolve " + id + ".");
             fail = true;
             return NULL;
@@ -143,60 +143,25 @@ static void printDialogListing(std::vector<std::string> projects) {
     print(line);
 }
 
-static void printInstallDialog(std::vector<RemoteProject*>* projects) {
-        std::vector<std::string> upgradeList = std::vector<std::string>(projects->size());
-        std::vector<std::string> installList = std::vector<std::string>(projects->size());
-        int ui = 0;
-        int ii = 0;
-        int nu = 0;
-        for (size_t i = 0; i < projects->size(); i++) {
-            RemoteProject* remote = (*projects)[i];
-            if (remote == NULL) {
-                nu++;
-                continue;
-            }
-            LocalProject* local = StoreFile::getInstance().getProject(remote->getId());
-            if (local != NULL) {
-                upgradeList[ui++] = remote->getId();
-            } else {
-                installList[ii++] = remote->getId();
-            }
-        }
-
-        if (ui > 0) {
-            print("The following projects will be upgraded:");
-            printDialogListing(upgradeList);
-        }
-
-        if (ii > 0) {
-            print("The following projects will be newly installed:");
-            printDialogListing(installList);
-        }
-
-        print(std::to_string(ui) + " upgraded, " + std::to_string(ii) + " newly installed, 0 to remove, "
-            + std::to_string(nu) + " not upgraded.");
-}
-
-static void printRemoveDialog(std::vector<LocalProject>* projects) {
-    std::vector<std::string> removeList = std::vector<std::string>(projects->size());
-    for (size_t i = 0; i < projects->size(); i++) {
-        removeList[i] = (*projects)[i].getId();
-    }
-    printDialogListing(removeList);
-
-    print("0 upgraded, 0 newly installed, " + std::to_string(projects->size()) + " to remove, 0 not upgraded.");
-}
-
 int handleInstallCmd(int argc, char* argv[]) {
     if (argc < 3) {
         tooFewArgs(CMD_INSTALL, USG_INSTALL);
         return 1;
     }
     std::vector<std::string>* projects = parseParams(argc, argv);
-    install(projects);
+    install(projects, false);
 }
 
-int install(std::vector<std::string>* projects) {
+int handleUpgradeCmd(int argc, char* argv[]) {
+    if (argc >= 3) {
+        tooFewArgs(CMD_UPGRADE, USG_UPGRADE);
+        return 1;
+    }
+    std::vector<std::string>* projects = StoreFile::getInstance().getProjectIds();
+    install(projects, true);
+}
+
+int install(std::vector<std::string>* projects, bool ignoreFail) {
     std::string* loc = Config::getInstance().get(Config::KEY_STORE);
     if (loc == NULL) {
         err("Store location is not set; please run store command first.");
@@ -204,7 +169,7 @@ int install(std::vector<std::string>* projects) {
     }
     makePath(*loc);
 
-    std::vector<RemoteProject*>* resolved = resolve(projects);
+    std::vector<RemoteProject*>* resolved = resolve(projects, ignoreFail);
 
     delete(projects);
 
@@ -229,7 +194,7 @@ int install(std::vector<std::string>* projects) {
         LocalProject* local = StoreFile::getInstance().getProject(proj->getId());
         if (local != NULL) {
             print("Upgrading project " + proj->getId() + " (#" + std::to_string(local->getVersion()) + " -> #" + std::to_string(proj->getVersion()) + ").");
-            if (!local->remove() && !proj->install()) {
+            if (!local->remove() || !proj->install()) {
                 //TODO: this shit ain't atomic
                 return 1;
             }
@@ -297,4 +262,48 @@ int remove(std::vector<std::string>* projects) {
     StoreFile::getInstance().save();
 
     return 0;
+}
+
+static void printInstallDialog(std::vector<RemoteProject*>* projects) {
+    std::vector<std::string> upgradeList = std::vector<std::string>(projects->size());
+    std::vector<std::string> installList = std::vector<std::string>(projects->size());
+    int ui = 0;
+    int ii = 0;
+    int nu = 0;
+    for (size_t i = 0; i < projects->size(); i++) {
+        RemoteProject* remote = (*projects)[i];
+        if (remote == NULL) {
+            nu++;
+            continue;
+        }
+        LocalProject* local = StoreFile::getInstance().getProject(remote->getId());
+        if (local != NULL) {
+            upgradeList[ui++] = remote->getId();
+        } else {
+            installList[ii++] = remote->getId();
+        }
+    }
+
+    if (ui > 0) {
+        print("The following projects will be upgraded:");
+        printDialogListing(upgradeList);
+    }
+
+    if (ii > 0) {
+        print("The following projects will be newly installed:");
+        printDialogListing(installList);
+    }
+
+    print(std::to_string(ui) + " upgraded, " + std::to_string(ii) + " newly installed, 0 to remove, "
+        + std::to_string(nu) + " not upgraded.");
+}
+
+static void printRemoveDialog(std::vector<LocalProject>* projects) {
+    std::vector<std::string> removeList = std::vector<std::string>(projects->size());
+    for (size_t i = 0; i < projects->size(); i++) {
+        removeList[i] = (*projects)[i].getId();
+    }
+    printDialogListing(removeList);
+
+    print("0 upgraded, 0 newly installed, " + std::to_string(projects->size()) + " to remove, 0 not upgraded.");
 }
