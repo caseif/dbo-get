@@ -36,4 +36,4 @@ MKDIR_P = mkdir -p
 .PHONY: directories
 
 ${OUT_DIR}:
-    ${MKDIR_P} ${OUT_DIR}
+	${MKDIR_P} ${OUT_DIR}
