@@ -14,7 +14,7 @@ LDFLAGS=-g
 SRC=$(wildcard *.$(SRC_EXT))
 OBJS=$(patsubst %.cpp,$(OUT_DIR)/%.$(OBJ_EXT),$(SRC))
 
-all: dboget
+all: directories dboget
 
 dboget: $(OBJS)
 	$(CXX) $(LDFLAGS) -o $(OUT_DIR)/dbo-get $(OBJS) $(LDLIBS) $(CPPFLAGS)
@@ -30,3 +30,10 @@ $(OUT_DIR)/%.$(OBJ_EXT): %.$(SRC_EXT)
 
 clean:
 	$(RM) $(OBJS)
+
+MKDIR_P = mkdir -p
+
+.PHONY: directories
+
+${OUT_DIR}:
+    ${MKDIR_P} ${OUT_DIR}

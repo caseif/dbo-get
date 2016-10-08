@@ -1,3 +1,7 @@
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_DEPRECATE
+#endif
+
 #include <assert.h>
 #include <cstring>
 #include <fstream>
@@ -175,11 +179,11 @@ bool RemoteProject::install() {
     
     CURL* query = curl_easy_init();
     FILE* data;
-    errno_t errCode;
     makePath(getDownloadCache());
     std::string fileName = getDownloadCache() + "/" + getFileName();
-    if ((errCode = fopen_s(&data, fileName.c_str(), "w+b")) != 0) {
-        perror("Failed to open destination file for writing");
+    data = fopen(fileName.c_str(), "w+b");
+    if (!data) {
+        err("Failed to open destination file for writing.");
         return false;
     }
     curl_easy_setopt(query, CURLOPT_WRITEFUNCTION, write_callback);
@@ -202,9 +206,9 @@ bool RemoteProject::install() {
 
     installFiles();
 
-    std::vector<std::string> files = std::vector<std::string>(1); //TODO
-    files[0] = getFileName();
-    StoreFile::getInstance().addProject(&LocalProject(id, numId, version, &files));
+    std::vector<std::string>* files = new std::vector<std::string>(1); //TODO
+    (*files)[0] = getFileName();
+    StoreFile::getInstance().addProject(new LocalProject(id, numId, version, files));
 
     return true;
 }
