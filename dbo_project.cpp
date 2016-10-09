@@ -16,6 +16,8 @@
 #include "store_file.h"
 #include "util.h"
 
+const int DOWNLOAD_ATTEMPTS = 1;
+
 std::string const CF_SEARCH_URL = "https://api.curseforge.com/servermods/projects?search=";
 std::string const CF_QUERY_URL = "https://api.curseforge.com/servermods/files?projectIds=";
 
@@ -48,7 +50,7 @@ std::string RemoteProject::getFileName() {
 }
 
 std::string RemoteProject::getFileMD5() {
-    return RemoteProject::fileName;
+    return RemoteProject::fileMD5;
 }
 
 int RemoteProject::parseVersion(std::string url) {
@@ -176,33 +178,50 @@ static size_t write_callback(void *ptr, size_t size, size_t nmemb, FILE *stream)
 
 bool RemoteProject::install() {
     assert(isResolved);
-    
-    CURL* query = curl_easy_init();
-    FILE* data;
-    makePath(getDownloadCache());
-    std::string fileName = getDownloadCache() + "/" + getFileName();
-    data = fopen(fileName.c_str(), "w+b");
-    if (!data) {
-        err("Failed to open destination file for writing.");
-        return false;
+
+    for (int i = 1; i <= DOWNLOAD_ATTEMPTS; i++) {
+        FILE* data;
+        makePath(getDownloadCache());
+        std::string fileName = getDownloadCache() + "/" + getFileName();
+        data = fopen(fileName.c_str(), "wb");
+        if (!data) {
+            err("Failed to open destination file for writing.");
+            return false;
+        }
+        CURL* query = curl_easy_init();
+        curl_easy_setopt(query, CURLOPT_WRITEFUNCTION, write_callback);
+        curl_easy_setopt(query, CURLOPT_WRITEDATA, data);
+
+        curl_easy_setopt(query, CURLOPT_URL, getFileUrl().c_str());
+
+        curl_easy_setopt(query, CURLOPT_FOLLOWLOCATION, true);
+        curl_easy_setopt(query, CURLOPT_SSL_VERIFYPEER, false);
+
+        CURLcode res = curl_easy_perform(query);
+        if (res != CURLE_OK) {
+            std::string errStr = std::string(curl_easy_strerror(res));
+            err("curl_easy_perform() failed: " + errStr);
+            return false;
+        }
+        curl_easy_cleanup(query);
+
+        std::string actualMD5 = md5(data);
+        print(getFileMD5());
+        print(actualMD5);
+        if (getFileMD5() != actualMD5) {
+            err("Unexpected MD5 for file for project " + getId() + ".");
+            if (i < DOWNLOAD_ATTEMPTS) {
+                print("Retrying download (attempt " + std::to_string(i + 1) + "/" + std::to_string(DOWNLOAD_ATTEMPTS) + ")...");
+                fclose(data);
+                continue;
+            } else {
+                err("Exhausted download retry attempts - giving up.");
+                fclose(data);
+                return false;
+            }
+        }
+        fclose(data);
     }
-    curl_easy_setopt(query, CURLOPT_WRITEFUNCTION, write_callback);
-    curl_easy_setopt(query, CURLOPT_WRITEDATA, data);
-
-    curl_easy_setopt(query, CURLOPT_URL, getFileUrl().c_str());
-
-    curl_easy_setopt(query, CURLOPT_FOLLOWLOCATION, true);
-    curl_easy_setopt(query, CURLOPT_SSL_VERIFYPEER, false);
-
-    CURLcode res = curl_easy_perform(query);
-    if (res != CURLE_OK) {
-        std::string errStr = std::string(curl_easy_strerror(res));
-        err("curl_easy_perform() failed: " + errStr);
-        return false;
-    }
-    curl_easy_cleanup(query);
-
-    fclose(data);
 
     installFiles();
 

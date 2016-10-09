@@ -6,11 +6,13 @@
 
 #include <algorithm>
 #include <iostream>
+#include <openssl/md5.h>
 #include <string>
+
+#include <errno.h>
 #include <sys/stat.h> // stat
-#include <errno.h>    // errno, ENOENT, EEXIST
 #if defined(_WIN32)
-#include <direct.h>   // _mkdir
+#include <direct.h>
 #endif
 
 // courtesy of http://stackoverflow.com/a/36401787/1988755
@@ -122,4 +124,22 @@ std::string getConfigFile() {
 
 std::string getDownloadCache() {
     return getConfigDir() + "/download-cache";
+}
+
+std::string md5(FILE* file) {
+    unsigned char digest[MD5_DIGEST_LENGTH];
+    MD5_CTX mdContext;
+    int bytes;
+    unsigned char data[1024];
+
+    MD5_Init(&mdContext);
+    while ((bytes = fread(data, 1, 1024, file)) != 0)
+        MD5_Update(&mdContext, data, bytes);
+    MD5_Final(digest, &mdContext);
+
+    char md5string[33];
+    for (int i = 0; i < MD5_DIGEST_LENGTH; ++i) {
+        sprintf(&md5string[i * 2], "%02x", (unsigned int) digest[i]);
+    }
+    return std::string(md5string);
 }

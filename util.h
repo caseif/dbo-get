@@ -46,3 +46,5 @@ std::string getConfigDir();
 std::string getConfigFile();
 
 std::string getDownloadCache();
+
+std::string md5(FILE* file);
