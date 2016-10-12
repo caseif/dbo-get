@@ -16,6 +16,7 @@
 #include "dbo_project.h"
 #include "store_file.h"
 #include "util.h"
+#include "zip_util.h"
 
 const int DOWNLOAD_ATTEMPTS = 3;
 
@@ -172,13 +173,8 @@ bool RemoteProject::populateFields(std::string json) {
     return true;
 }
 
-/*static size_t write_callback(void* ptr, size_t size, size_t nmemb, FILE* stream) {
-    size_t written = fwrite(ptr, size, nmemb, stream);
-    return written;
-}*/
-
 static size_t write_callback(char* ptr, size_t size, size_t nmemb, void* userdata) {
-	std::ofstream *out = static_cast<std::ofstream *>(userdata);
+	std::ofstream* out = static_cast<std::ofstream*>(userdata);
 	size_t nbytes = size * nmemb;
 	out->write(ptr, nbytes);
 	return nbytes;
@@ -232,25 +228,31 @@ bool RemoteProject::install() {
         fclose(data);
     }
 
-    installFiles();
-
-    std::vector<std::string>* files = new std::vector<std::string>(1); //TODO
-    (*files)[0] = getFileName();
+	std::vector<std::string>* files = installFiles();
     StoreFile::getInstance().addProject(new LocalProject(id, numId, version, files));
 
     return true;
 }
 
-void RemoteProject::installFiles() {
-    std::ifstream src(getDownloadCache() + "/" + getFileName(), std::ios::binary);
-    if (!src.is_open()) {
-        perror("Failed to read file from download cache");
-    }
-    std::ofstream dst(*Config::getInstance().get(Config::KEY_STORE) + "/" + getFileName(), std::ios::binary);
-    dst << src.rdbuf();
-    src.close();
-    dst.flush();
-    dst.close();
+std::vector<std::string>* RemoteProject::installFiles() {
+	if (ends_with(getFileName(), ".jar")) {
+		std::ifstream src(getDownloadCache() + "/" + getFileName(), std::ios::binary);
+		if (!src.is_open()) {
+			perror("Failed to read file from download cache.");
+		}
+		std::ofstream dst(*Config::getInstance().get(Config::KEY_STORE) + "/" + getFileName(), std::ios::binary | std::ios_base::out);
+		dst << src.rdbuf();
+		dst.flush();
+		dst.close();
+		src.close();
+
+		std::vector<std::string>* files = new std::vector<std::string>(1); //TODO
+		(*files)[0] = getFileName();
+		return files;
+	} else { // it's probably an archive
+		print("Extracting files for project " + getId() + ".");
+		return unzip(getDownloadCache() + "/" + getFileName(), *Config::getInstance().get(Config::KEY_STORE));
+	}
 }
 
 LocalProject::LocalProject() {

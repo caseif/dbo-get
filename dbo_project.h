@@ -19,7 +19,7 @@ class RemoteProject : public DboProject {
         std::string fileName;
         std::string fileMD5;
 
-        void installFiles();
+        std::vector<std::string>* installFiles();
         int parseVersion(std::string url);
 
     public:
