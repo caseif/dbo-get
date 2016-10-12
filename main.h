@@ -16,7 +16,6 @@ int handleRemoveCmd(int argc, char* argv[]);
 int handleHelpCmd(int argc, char* argv[]);
 int handleMooCmd(int argc, char* argv[]);
 
-int setStore(int argc, char* argv[]);
 void printInfoHeader();
 void printHelp(Command* cmd);
 
