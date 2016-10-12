@@ -1,5 +1,7 @@
 #pragma once
 
+#define JSON_DLL // required on Windows
+
 #include <vector>
 
 #include "command.h"

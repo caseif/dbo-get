@@ -3,8 +3,9 @@
 #include <fstream>
 #include <string>
 
+#include <json/json.h>
+
 #include "config.h"
-#include "json/json.h"
 #include "store_file.h"
 #include "util.h"
 
