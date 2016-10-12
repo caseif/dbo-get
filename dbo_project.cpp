@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <cstring>
 #include <fstream>
+#include <iterator>
 #include <regex>
 #include <string>
 
@@ -171,26 +172,28 @@ bool RemoteProject::populateFields(std::string json) {
     return true;
 }
 
-static size_t write_callback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+/*static size_t write_callback(void* ptr, size_t size, size_t nmemb, FILE* stream) {
     size_t written = fwrite(ptr, size, nmemb, stream);
     return written;
+}*/
+
+static size_t write_callback(char* ptr, size_t size, size_t nmemb, void* userdata) {
+	std::ofstream *out = static_cast<std::ofstream *>(userdata);
+	size_t nbytes = size * nmemb;
+	out->write(ptr, nbytes);
+	return nbytes;
 }
 
 bool RemoteProject::install() {
     assert(isResolved);
 
     for (int i = 1; i <= DOWNLOAD_ATTEMPTS; i++) {
-        FILE* data;
         makePath(getDownloadCache());
         std::string fileName = getDownloadCache() + "/" + getFileName();
-        data = fopen(fileName.c_str(), "wb");
-        if (!data) {
-            err("Failed to open destination file for writing.");
-            return false;
-        }
+		std::ofstream output(fileName, std::ios::binary);
         CURL* query = curl_easy_init();
         curl_easy_setopt(query, CURLOPT_WRITEFUNCTION, write_callback);
-        curl_easy_setopt(query, CURLOPT_WRITEDATA, data);
+        curl_easy_setopt(query, CURLOPT_WRITEDATA, &output);
 
         curl_easy_setopt(query, CURLOPT_URL, getFileUrl().c_str());
 
@@ -198,6 +201,9 @@ bool RemoteProject::install() {
         curl_easy_setopt(query, CURLOPT_SSL_VERIFYPEER, false);
 
         CURLcode res = curl_easy_perform(query);
+
+		output.close();
+
         if (res != CURLE_OK) {
             std::string errStr = std::string(curl_easy_strerror(res));
             err("curl_easy_perform() failed: " + errStr);
@@ -205,6 +211,11 @@ bool RemoteProject::install() {
         }
         curl_easy_cleanup(query);
 
+		FILE* data = fopen(fileName.c_str(), "rb");
+		if (!data) {
+			err("Failed to open destination file for writing.");
+			return false;
+		}
         std::string actualMD5 = md5(data);
         print(getFileMD5());
         print(actualMD5);
