@@ -17,7 +17,7 @@
 #include "store_file.h"
 #include "util.h"
 
-const int DOWNLOAD_ATTEMPTS = 1;
+const int DOWNLOAD_ATTEMPTS = 3;
 
 std::string const CF_SEARCH_URL = "https://api.curseforge.com/servermods/projects?search=";
 std::string const CF_QUERY_URL = "https://api.curseforge.com/servermods/files?projectIds=";
