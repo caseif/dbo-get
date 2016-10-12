@@ -5,7 +5,7 @@ OBJ_EXT=o
 
 CPPFLAGS= -std=c++11
 
-LIBFLAGS=-lcurl -lssh2 -lcrypto
+LIBFLAGS=-lcurl -lssh2 -lcrypto -lzip
 CPPFLAGS+= $(LIBFLAGS)
 
 RM=rm -f
