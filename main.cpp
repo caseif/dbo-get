@@ -75,7 +75,7 @@ int handleStoreCmd(int argc, char* argv[]) {
 
     std::string path = "";
     std::vector<std::string>* params = parseParams(argc, argv);
-    for (int i = 0; i < params->size(); i++) {
+    for (size_t i = 0; i < params->size(); i++) {
         path += (*params)[i];
         if (i < params->size() - 1) {
             path += " ";
@@ -97,7 +97,7 @@ std::vector<RemoteProject*>* resolve(std::vector<std::string>* projects, bool ig
     bool fail = false;
     bool empty = true;
     curl_global_init(CURL_GLOBAL_ALL);
-    for (int i = 0; i < projects->size(); i++) {
+    for (size_t i = 0; i < projects->size(); i++) {
         std::string id = (*projects)[i];
         print("Resolving project " + id + "...");
         RemoteProject* remote = new RemoteProject(id);
@@ -208,7 +208,7 @@ void printHelp(Command* cmd) {
     }
     print("  " + cmd->getLabel() + indent + cmd->getDescription());
     std::string indent2 = indent;
-    for (int i = 0; i < cmd->getLabel().length() + 4; i++) {
+    for (size_t i = 0; i < cmd->getLabel().length() + 4; i++) {
         indent2 += " ";
     }
     print(indent2 + "Usage: dbo-get " + cmd->getLabel() + " " + cmd->getUsage());
@@ -280,7 +280,7 @@ int remove(std::vector<std::string>* projects) {
 
     bool fail = false;;
     std::vector<LocalProject> resolved = std::vector<LocalProject>(projects->size());
-    for (int i = 0; i < projects->size(); i++) {
+    for (size_t i = 0; i < projects->size(); i++) {
         std::string id = (*projects)[i];
         print("Resolving project " + id + "...");
         LocalProject* proj = StoreFile::getInstance().getProject(id);
