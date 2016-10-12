@@ -190,7 +190,7 @@ bool RemoteProject::install() {
     for (int i = 1; i <= DOWNLOAD_ATTEMPTS; i++) {
         makePath(getDownloadCache());
         std::string fileName = getDownloadCache() + "/" + getFileName();
-		std::ofstream output(fileName, std::ios::binary);
+		std::ofstream output(fileName, std::ios::binary | std::ios_base::out);
         CURL* query = curl_easy_init();
         curl_easy_setopt(query, CURLOPT_WRITEFUNCTION, write_callback);
         curl_easy_setopt(query, CURLOPT_WRITEDATA, &output);
@@ -217,8 +217,6 @@ bool RemoteProject::install() {
 			return false;
 		}
         std::string actualMD5 = md5(data);
-        print(getFileMD5());
-        print(actualMD5);
         if (getFileMD5() != actualMD5) {
             err("Unexpected MD5 for file for project " + getId() + ".");
             if (i < DOWNLOAD_ATTEMPTS) {
