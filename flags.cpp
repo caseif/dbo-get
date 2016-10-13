@@ -7,7 +7,8 @@ static const std::map<char, Flag> FLAGS_SHORTHAND = {{'f', kForce}, {'q', kQuiet
 static const std::map<std::string, Flag> FLAGS_LONGHAND = {{"force", kForce}, {"quiet", kQuiet}, {"update", kUpdate}, {"verbose", kVerbose}};
 
 const Flag* matchFlag(char shorthand) {
-	return FLAGS_SHORTHAND.count(shorthand) > 0 ? &FLAGS_SHORTHAND.at(shorthand) : NULL;
+	int count = FLAGS_SHORTHAND.count(shorthand);
+	return count > 0 ? &FLAGS_SHORTHAND.at(shorthand) : NULL;
 }
 
 const Flag* matchFlag(std::string name) {

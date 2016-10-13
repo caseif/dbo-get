@@ -138,6 +138,7 @@ std::vector<RemoteProject*>* resolve(std::vector<std::string>* projects, bool ig
     bool fail = false;
     bool empty = true;
     curl_global_init(CURL_GLOBAL_ALL);
+	bool forceUpdate = testFlag(Flag::kUpdate);
     for (size_t i = 0; i < projects->size(); i++) {
         std::string id = (*projects)[i];
         print("Resolving project " + id + "...");
@@ -151,7 +152,7 @@ std::vector<RemoteProject*>* resolve(std::vector<std::string>* projects, bool ig
 
         LocalProject* local = StoreFile::getInstance().getProject(id);
 
-        if (local == NULL || remote->getVersion() > local->getVersion()) {
+        if (local == NULL || forceUpdate || remote->getVersion() > local->getVersion()) {
             (*vec)[i] = remote;
             empty = false;
         }
