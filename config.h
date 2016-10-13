@@ -6,6 +6,7 @@
 class Config {
     private:
         std::map<std::string, std::string> configMap;
+		void load();
         void save();
     public:
         Config();
@@ -14,7 +15,6 @@ class Config {
         static Config& getInstance();
         const static std::string KEY_STORE;
 
-        void load();
         std::string* get(std::string key);
         void set(std::string key, std::string value);
 };

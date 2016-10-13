@@ -28,8 +28,13 @@ std::string StoreFile::getPath() {
 void StoreFile::load() {
     assert(!initialized);
 
+	std::string path = getPath();
+
+	printV("Loading store file from disk...");
+	printV("Loading from " + path + ".");
+
     Json::Value root;
-    std::ifstream fileStream(getPath());
+    std::ifstream fileStream(path);
     if (!fileStream.is_open()) {
         initialized = true;
         return;
@@ -53,9 +58,15 @@ void StoreFile::load() {
     }
 
     initialized = true;
+	printV("Done loading store file.");
 }
 
 void StoreFile::save() {
+	std::string path = getPath();
+
+	printV("Saving store file to disk...");
+	printV("Saving to " + path);
+
     Json::Value root = Json::Value();
     Json::ArrayIndex ind = 0;
     for (str_locProj_map_it it = projects.begin(); it != projects.end(); it++) {
@@ -74,9 +85,11 @@ void StoreFile::save() {
         ind++;
     }
 
-    std::ofstream fileStream(getPath(), std::fstream::trunc);
+    std::ofstream fileStream(path, std::fstream::trunc);
     fileStream << root;
     fileStream.close();
+
+	printV("Done saving store file.");
 }
 
 LocalProject* StoreFile::getProject(std::string id) {

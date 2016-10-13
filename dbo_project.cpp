@@ -86,6 +86,7 @@ bool RemoteProject::resolve() {
 }
 
 bool RemoteProject::doLookup() {
+	printV("Looking up project " + getId() + " on remote server...");
     CURL* search = curl_easy_init();
     if (!search) {
         return false;
@@ -103,11 +104,13 @@ bool RemoteProject::doLookup() {
         return false;
     }
     curl_easy_cleanup(search);
+	printV("Done lookup.");
 
     return parseId(json);
 }
 
 bool RemoteProject::doQuery() {
+	printV("Querying remote server for project information...");
     CURL* query = curl_easy_init();
     std::string json;
     setOptions(query);
@@ -121,11 +124,13 @@ bool RemoteProject::doQuery() {
         return false;
     }
     curl_easy_cleanup(query);
+	printV("Done querying.");
 
     return populateFields(json);
 }
 
 bool RemoteProject::parseId(std::string json) {
+	printV("Searching for project in returned lookup table...");
     Json::Value root;
     std::stringstream contentStream(json);
     std::string alts = "";
@@ -133,6 +138,7 @@ bool RemoteProject::parseId(std::string json) {
     for (Json::ArrayIndex i = 0; i < root.size(); i++) {
         if (root[i]["slug"] == getId()) {
             numId = root[i]["id"].asInt();
+			printV("Found project (ID " + std::to_string(numId) + ").");
             return true;
         } else {
             alts += root[i]["slug"].asString();
@@ -149,6 +155,7 @@ bool RemoteProject::parseId(std::string json) {
 }
 
 bool RemoteProject::populateFields(std::string json) {
+	printV("Populating project " + getId() + " with returned remote information...");
     Json::Value root;
     std::stringstream contentStream(json);
     contentStream >> root;
@@ -170,6 +177,7 @@ bool RemoteProject::populateFields(std::string json) {
         err("Failed to fetch metadata of latest artifact for project " + getId() + ".");
         return false;
     }
+	printV("Done populating.");
     return true;
 }
 
@@ -186,6 +194,7 @@ bool RemoteProject::install() {
     for (int i = 1; i <= DOWNLOAD_ATTEMPTS; i++) {
         makePath(getDownloadCache());
         std::string fileName = getDownloadCache() + "/" + getFileName();
+		printV("Downloading to " + fileName + " from " + getFileUrl() + ".");
 		std::ofstream output(fileName, std::ios::binary | std::ios_base::out);
         CURL* query = curl_easy_init();
         curl_easy_setopt(query, CURLOPT_WRITEFUNCTION, write_callback);
@@ -202,16 +211,19 @@ bool RemoteProject::install() {
 
         if (res != CURLE_OK) {
             std::string errStr = std::string(curl_easy_strerror(res));
-            err("curl_easy_perform() failed: " + errStr);
+            err("HTTP request failed: " + errStr);
             return false;
         }
         curl_easy_cleanup(query);
+		printV("Done downloading.");
 
 		FILE* data = fopen(fileName.c_str(), "rb");
 		if (!data) {
 			err("Failed to open destination file for writing.");
 			return false;
 		}
+
+		printV("Verifying MD5 checksum of downloaded file...");
         std::string actualMD5 = md5(data);
         if (getFileMD5() != actualMD5) {
             err("Unexpected MD5 for file for project " + getId() + ".");
@@ -226,6 +238,7 @@ bool RemoteProject::install() {
             }
         }
         fclose(data);
+		break;
     }
 
 	std::vector<std::string>* files = installFiles();

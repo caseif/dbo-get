@@ -46,8 +46,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    Config::getInstance().load();
-
 	parseParamsAndFlags(argc, argv);
 
     char* cmd = argv[1];
@@ -258,7 +256,33 @@ void printHelp(Command* cmd) {
 }
 
 int handleMooCmd(int argc, char* argv[]) {
-	printQ("Yes, you're very clever.");
+	int vs = testFlagi(Flag::kVerbose);
+	switch (vs) {
+	case 0:
+		printQ("Yes, you're very clever.");
+		break;
+	case 1:
+		printQ("Hey, what are you doing?");
+		break;
+	case 2:
+		printQ("Mhm, I get it, haha. Funny.");
+		break;
+	case 3:
+		printQ("You really want this, don't you?");
+		break;
+	case 4:
+		printQ("Alright, very well.");
+		break;
+	case 5:
+		printArt();
+		break;
+	case 50:
+		printQ("Someone's been rummaging through the source, mm?");
+		break;
+	default:
+		printQ("Happy?");
+		break;
+	}
     return 0;
 }
 

@@ -55,6 +55,19 @@ inline void invalidFlag(char flag) {
 	err("Unknown flag '" + std::string(&flag, 1) + "', try `dbo-get help`.");
 }
 
+inline void printArt() {
+	printQ(R"R(           _.  )R");
+	printQ(R"R(        ;=',_  )R");
+	printQ(R"R(       S" .--` )R");
+	printQ(R"R(      sS  \__  )R");
+	printQ(R"R(   __.' ( \--> )R");
+	printQ(R"R( _=/    _./-\/  )R");
+	printQ(R"R(((\( /-'   -'l  )R");
+	printQ(R"R( ) |/ \\    )R");
+	printQ(R"R(    \\  \ )R");
+	printQ(R"R(     `~ `~)R");
+}
+
 size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb, std::string *s);
 
 std::vector<std::string> explode(std::string const & s, char delim);

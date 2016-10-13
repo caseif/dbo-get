@@ -17,3 +17,5 @@ const Flag* matchFlag(char shorthand);
 const Flag* matchFlag(std::string name);
 
 bool testFlag(Flag flag);
+
+int testFlagi(Flag flag);

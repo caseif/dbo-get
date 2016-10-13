@@ -25,3 +25,7 @@ bool testFlag(Flag flag) {
 	const void* loc = flags;
 	return std::find(flags->begin(), flags->end(), flag) != flags->end();
 }
+
+int testFlagi(Flag flag) {
+	return std::count(flags->begin(), flags->end(), flag);
+}
