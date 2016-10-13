@@ -34,11 +34,11 @@ inline void tooManyArgs(std::string command, std::string usage) {
 }
 
 inline void invalidFlag(std::string flag) {
-	err("Invalid flag '" + flag + "', try `dbo-get help`.");
+	err("Unknown flag '" + flag + "', try `dbo-get help`.");
 }
 
 inline void invalidFlag(char flag) {
-	err("Invalid flag '" + std::string(&flag) + "', try `dbo-get help`.");
+	err("Unknown flag '" + std::string(&flag, 1) + "', try `dbo-get help`.");
 }
 
 size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb, std::string *s);
