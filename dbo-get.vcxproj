@@ -121,6 +121,7 @@
     <ClCompile Include="command.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="dbo_project.cpp" />
+    <ClCompile Include="flags.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="store_file.cpp" />
     <ClCompile Include="util.cpp" />
@@ -130,6 +131,7 @@
     <ClInclude Include="command.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="dbo_project.h" />
+    <ClInclude Include="flags.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="store_file.h" />
     <ClInclude Include="util.h" />

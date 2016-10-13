@@ -25,12 +25,20 @@ inline void err(std::string str) {
 
 inline void tooFewArgs(std::string command, std::string usage) {
     err("Too few args!");
-    print("    Usage: dbo-get " + command + " " + usage);
+    print("    Usage: dbo-get [flags] " + command + " " + usage);
 }
 
 inline void tooManyArgs(std::string command, std::string usage) {
     err("Too many args!");
-    print("    Usage: dbo-get " + command + " " + usage);
+    print("    Usage: dbo-get [flags] " + command + " " + usage);
+}
+
+inline void invalidFlag(std::string flag) {
+	err("Invalid flag '" + flag + "', try `dbo-get help`.");
+}
+
+inline void invalidFlag(char flag) {
+	err("Invalid flag '" + std::string(&flag) + "', try `dbo-get help`.");
 }
 
 size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb, std::string *s);

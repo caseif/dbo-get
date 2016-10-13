@@ -6,8 +6,9 @@
 
 #include "command.h"
 #include "dbo_project.h"
+#include "flags.h"
 
-std::vector<std::string>* parseParams(int argc, char* argv[]);
+void parseParamsAndFlags(int argc, char* argv[]);
 
 int handleStoreCmd(int argc, char* argv[]);
 int handleInstallCmd(int argc, char* argv[]);

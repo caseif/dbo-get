@@ -11,6 +11,7 @@
 #include "command.h"
 #include "config.h"
 #include "dbo_project.h"
+#include "flags.h"
 #include "main.h"
 #include "store_file.h"
 #include "util.h"
@@ -36,6 +37,9 @@ Command* const CMDS[] = {CMD_STORE, CMD_INSTALL, CMD_REMOVE, CMD_UPGRADE, CMD_HE
 
 static std::vector<RemoteProject*>* const EMPTY_RPP_VEC = new std::vector<RemoteProject*>(0);
 
+static std::vector<std::string>* params;
+static std::vector<Flag>* flags;
+
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         err("Too few args!");
@@ -44,6 +48,8 @@ int main(int argc, char* argv[]) {
     }
 
     Config::getInstance().load();
+
+	parseParamsAndFlags(argc, argv);
 
     char* cmd = argv[1];
     for (auto it = std::begin(CMDS); it != std::end(CMDS); ++it) {
@@ -55,15 +61,51 @@ int main(int argc, char* argv[]) {
     return 1;
 }
 
-std::vector<std::string>* parseParams(int argc, char* argv[]) {
-    std::vector<std::string>* params = new std::vector<std::string>(argc - 2);
-    int j = 0;
+bool testFlag(Flag flag) {
+	return std::find(flags->begin(), flags->end(), flag) != flags->end();
+}
+
+void parseParamsAndFlags(int argc, char* argv[]) {
+	int paramCount = 0;
+	int flagCount = 0;
+	for (int i = 2; i < argc; i++) {
+		if (argv[i][0] == '-') {
+			flagCount += argv[i][1] == '-' ? 1 : std::strlen(argv[i]) - 1;
+		} else {
+			paramCount++;
+		}
+	}
+
+    params = new std::vector<std::string>(paramCount);
+	flags = new std::vector<Flag>(flagCount);
+    int p = 0;
+	int f = 0;
     for (int i = 2; i < argc; i++) {
-        if (argv[i][0] != '-') {
-            (*params)[j++] = argv[i];
+		if (argv[i][0] == '-') {
+			if (argv[i][1] == '-') {
+				std::string name = std::string(argv[i] + 2);
+				const Flag* flag = matchFlag(name);
+				if (flag == NULL) {
+					invalidFlag(name);
+					exit(1);
+				} else {
+					(*flags)[f++] = *flag;
+				}
+			} else {
+				for (size_t j = 1; j < std::strlen(argv[i]); j++) {
+					const Flag* flag = matchFlag(argv[i][j]);
+					if (flag == NULL) {
+						invalidFlag(argv[i][j]);
+						exit(1);
+					} else {
+						(*flags)[f++] = *flag;
+					}
+				}
+			}
+		} else {
+            (*params)[p++] = argv[i];
         }
     }
-    return params;
 }
 
 int handleStoreCmd(int argc, char* argv[]) {
@@ -74,7 +116,6 @@ int handleStoreCmd(int argc, char* argv[]) {
     }
 
     std::string path = "";
-    std::vector<std::string>* params = parseParams(argc, argv);
     for (size_t i = 0; i < params->size(); i++) {
         path += (*params)[i];
         if (i < params->size() - 1) {
@@ -143,8 +184,7 @@ int handleInstallCmd(int argc, char* argv[]) {
         tooFewArgs(CMD_INSTALL->getLabel(), CMD_INSTALL->getUsage());
         return 1;
     }
-    std::vector<std::string>* projects = parseParams(argc, argv);
-    return install(projects, false);
+    return install(params, false);
 }
 
 int handleUpgradeCmd(int argc, char* argv[]) {
@@ -161,7 +201,7 @@ int handleRemoveCmd(int argc, char* argv[]) {
         tooFewArgs(CMD_REMOVE->getLabel(), CMD_REMOVE->getUsage());
         return 1;
     }
-    return remove(parseParams(argc, argv));
+    return remove(params);
 }
 
 int handleHelpCmd(int argc, char* argv[]) {

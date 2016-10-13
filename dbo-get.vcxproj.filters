@@ -36,6 +36,9 @@
     <ClCompile Include="zip_util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="flags.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -57,6 +60,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="zip_util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="flags.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
