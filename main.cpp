@@ -16,7 +16,7 @@
 #include "store_file.h"
 #include "util.h"
 
-static const std::string VERSION = "0.2.0-SNAPSHOT";
+static const std::string VERSION = "0.2.0";
 
 static const int INSTALL_DIALOG_LINE_LENGTH = 80;
 static const int HELP_CMD_INDENT_SIZE = 10;
