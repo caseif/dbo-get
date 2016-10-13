@@ -19,7 +19,8 @@
 static const std::string VERSION = "0.2.0-SNAPSHOT";
 
 static const int INSTALL_DIALOG_LINE_LENGTH = 80;
-static const int HELP_INDENT_SIZE = 10;
+static const int HELP_CMD_INDENT_SIZE = 10;
+static const int HELP_FLAG_INDENT_SIZE = 18;
 
 Command* const CMD_STORE = new Command("store", "[location]",
         "Gets or sets the current store location.", &handleStoreCmd);
@@ -205,9 +206,23 @@ int handleRemoveCmd(int argc, char* argv[]) {
     return remove(params);
 }
 
+void printFlag(std::string name, char shorthand, std::string description) {
+	std::string start = "  -" + std::string(&shorthand, 1) + ", --" + name;
+	std::string indent = "";
+	for (int i = start.length(); i < HELP_FLAG_INDENT_SIZE; i++) {
+		indent += " ";
+	}
+	printQ(start + indent + description);
+}
+
 int handleHelpCmd(int argc, char* argv[]) {
     if (argc == 2) {
         printInfoHeader();
+		printQ("Flags:");
+		printFlag("force", 'f', "Forces dbo-get to upgrade packages without comparing versions at all.");
+		printFlag("quiet", 'q', "Enables quiet logging and suppresses much of the normal output.");
+		printFlag("verbose", 'v', "Enables verbose logging.");
+		printQ("Commands:");
         for (auto it = std::begin(CMDS); it != std::end(CMDS); ++it) {
             if ((*it)->isDocumented()) {
                 printHelp(*it);
@@ -239,12 +254,11 @@ void printInfoHeader() {
 	printQ("dbo-get is a utility for installing and managing projects hosted by BukkitDev,");
 	printQ("the premier hosting service for Bukkit software.");
 	printQ("");
-	printQ("Commands:");
 }
 
 void printHelp(Command* cmd) {
     std::string indent = "";
-    for (int i = cmd->getLabel().length(); i < HELP_INDENT_SIZE; i++) {
+    for (int i = cmd->getLabel().length(); i < HELP_CMD_INDENT_SIZE; i++) {
         indent += " ";
     }
 	printQ("  " + cmd->getLabel() + indent + cmd->getDescription());
