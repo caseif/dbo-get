@@ -56,7 +56,7 @@ std::string RemoteProject::getFileMD5() {
 }
 
 int RemoteProject::parseVersion(std::string url) {
-    const std::regex r(R"exp(\/(\d(?:\d(?:\d)?)?)\/(\d(?:\d(?:\d)?)?)\/)exp", std::regex_constants::ECMAScript);
+    const std::regex r(R"exp(\/(\d{1,4})\/(\d{1,3})\/)exp", std::regex_constants::ECMAScript);
     std::smatch matcher;
     std::regex_search(url, matcher, r);
     if (matcher.empty()) {
