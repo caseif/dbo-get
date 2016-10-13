@@ -15,13 +15,15 @@
 #include <direct.h>
 #endif
 
+#include "flags.h"
+
 // courtesy of http://stackoverflow.com/a/36401787/1988755
 size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb, std::string *s) {
     size_t newLength = size*nmemb;
     size_t oldLength = s->size();
     try {
         s->resize(oldLength + newLength);
-    } catch (std::bad_alloc &e) {
+    } catch (std::bad_alloc) {
         //handle memory problem
         return 0;
     }

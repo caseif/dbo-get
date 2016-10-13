@@ -15,8 +15,22 @@
 #include <sstream>
 #include <vector>
 
+#include "flags.h"
+
+inline void printQ(std::string str) {
+	std::cout << str.c_str() << std::endl;
+}
+
 inline void print(std::string str) {
-    std::cout << str.c_str() << std::endl;
+	if (!testFlag(Flag::kQuiet)) {
+		std::cout << str.c_str() << std::endl;
+	}
+}
+
+inline void printV(std::string str) {
+	if (testFlag(Flag::kVerbose)) {
+		std::cout << str.c_str() << std::endl;
+	}
 }
 
 inline void err(std::string str) {

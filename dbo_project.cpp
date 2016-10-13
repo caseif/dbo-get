@@ -99,7 +99,7 @@ bool RemoteProject::doLookup() {
     CURLcode res = curl_easy_perform(search);
     if (res != CURLE_OK) {
         std::string errStr = std::string(curl_easy_strerror(res));
-        err("curl_easy_perform() failed: " + errStr);
+        err("HTTP request failed: " + errStr);
         return false;
     }
     curl_easy_cleanup(search);
@@ -117,7 +117,7 @@ bool RemoteProject::doQuery() {
     CURLcode res = curl_easy_perform(query);
     if (res != CURLE_OK) {
         std::string errStr = std::string(curl_easy_strerror(res));
-        err("curl_easy_perform() failed: " + errStr);
+        err("HTTP request failed: " + errStr);
         return false;
     }
     curl_easy_cleanup(query);
@@ -216,7 +216,7 @@ bool RemoteProject::install() {
         if (getFileMD5() != actualMD5) {
             err("Unexpected MD5 for file for project " + getId() + ".");
             if (i < DOWNLOAD_ATTEMPTS) {
-                print("Retrying download (attempt " + std::to_string(i + 1) + "/" + std::to_string(DOWNLOAD_ATTEMPTS) + ")...");
+                printQ("Retrying download (attempt " + std::to_string(i + 1) + "/" + std::to_string(DOWNLOAD_ATTEMPTS) + ")...");
                 fclose(data);
                 continue;
             } else {

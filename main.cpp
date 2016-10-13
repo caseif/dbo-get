@@ -38,12 +38,11 @@ Command* const CMDS[] = {CMD_STORE, CMD_INSTALL, CMD_REMOVE, CMD_UPGRADE, CMD_HE
 static std::vector<RemoteProject*>* const EMPTY_RPP_VEC = new std::vector<RemoteProject*>(0);
 
 static std::vector<std::string>* params;
-static std::vector<Flag>* flags;
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         err("Too few args!");
-        print("    Usage: dbo_get <command>");
+		print("    Usage: dbo_get <command>");
         return 1;
     }
 
@@ -61,10 +60,6 @@ int main(int argc, char* argv[]) {
     return 1;
 }
 
-bool testFlag(Flag flag) {
-	return std::find(flags->begin(), flags->end(), flag) != flags->end();
-}
-
 void parseParamsAndFlags(int argc, char* argv[]) {
 	int paramCount = 0;
 	int flagCount = 0;
@@ -77,7 +72,7 @@ void parseParamsAndFlags(int argc, char* argv[]) {
 	}
 
     params = new std::vector<std::string>(paramCount);
-	flags = new std::vector<Flag>(flagCount);
+	std::vector<Flag>* flags = new std::vector<Flag>(flagCount);
     int p = 0;
 	int f = 0;
     for (int i = 2; i < argc; i++) {
@@ -106,12 +101,19 @@ void parseParamsAndFlags(int argc, char* argv[]) {
             (*params)[p++] = argv[i];
         }
     }
+
+	setFlags(flags);
+
+	if (testFlag(Flag::kQuiet) && testFlag(Flag::kVerbose)) {
+		err("Quiet and verbose flags cannot be used in conjunction.");
+		exit(1);
+	}
 }
 
 int handleStoreCmd(int argc, char* argv[]) {
     if (argc < 3) {
         std::string* loc = Config::getInstance().get(Config::KEY_STORE);
-        print("Current store location: " + (loc == NULL ? "NOT SET" : *loc));
+		printQ("Current store location: " + (loc == NULL ? "NOT SET" : *loc));
         return 0;
     }
 
@@ -126,13 +128,13 @@ int handleStoreCmd(int argc, char* argv[]) {
     std::replace(path.begin(), path.end(), '\\', '/');
     Config::getInstance().set(Config::KEY_STORE, path);
     makePath(path);
-    print("Successfully set store location as \"" + path + "\".");
+	printQ("Successfully set store location as \"" + path + "\".");
 
     return 0;
 }
 
 std::vector<RemoteProject*>* resolve(std::vector<std::string>* projects, bool ignoreFail) {
-    print("Resolving projects...");
+    printQ("Resolving projects...");
 
     std::vector<RemoteProject*>* vec = new std::vector<RemoteProject*>(projects->size());
     bool fail = false;
@@ -171,13 +173,13 @@ static void printDialogListing(std::vector<std::string> projects) {
         }
         std::string newLine = line + projects[i];
         if (line.length() + 1 > INSTALL_DIALOG_LINE_LENGTH) {
-            print(line);
+			printQ(line);
             line = "  " + projects[i];
         } else {
             line = newLine + " ";
         }
     }
-    print(line);
+	printQ(line);
 }
 
 int handleInstallCmd(int argc, char* argv[]) {
@@ -233,13 +235,13 @@ int handleHelpCmd(int argc, char* argv[]) {
 }
 
 void printInfoHeader() {
-    print("dbo-get v" + VERSION + ".");
-    print("Copyright (c) 2016 Max Roncace.");
-    print("");
-    print("dbo-get is a utility for installing and managing projects hosted by BukkitDev,");
-    print("the premier hosting service for Bukkit software.");
-    print("");
-    print("Commands:");
+	printQ("dbo-get v" + VERSION + ".");
+	printQ("Copyright (c) 2016 Max Roncace.");
+	printQ("");
+	printQ("dbo-get is a utility for installing and managing projects hosted by BukkitDev,");
+	printQ("the premier hosting service for Bukkit software.");
+	printQ("");
+	printQ("Commands:");
 }
 
 void printHelp(Command* cmd) {
@@ -247,16 +249,16 @@ void printHelp(Command* cmd) {
     for (int i = cmd->getLabel().length(); i < HELP_INDENT_SIZE; i++) {
         indent += " ";
     }
-    print("  " + cmd->getLabel() + indent + cmd->getDescription());
+	printQ("  " + cmd->getLabel() + indent + cmd->getDescription());
     std::string indent2 = indent;
     for (size_t i = 0; i < cmd->getLabel().length() + 4; i++) {
         indent2 += " ";
     }
-    print(indent2 + "Usage: dbo-get " + cmd->getLabel() + " " + cmd->getUsage());
+    printQ(indent2 + "Usage: dbo-get " + cmd->getLabel() + " " + cmd->getUsage());
 }
 
 int handleMooCmd(int argc, char* argv[]) {
-    print("Yes, you're very clever.");
+	printQ("Yes, you're very clever.");
     return 0;
 }
 
@@ -278,12 +280,13 @@ int install(std::vector<std::string>* projects, bool ignoreFail) {
     }
 
     if (resolved->empty()) {
-        print("Already up-to-date.");
+        printQ("Already up-to-date.");
         return 0;
     }
 
     printInstallDialog(resolved);
 
+	printQ("Installing projects...");
     for (size_t i = 0; i < resolved->size(); i++) {
         RemoteProject* proj = (*resolved)[i];
         if (proj == NULL) {
@@ -305,6 +308,7 @@ int install(std::vector<std::string>* projects, bool ignoreFail) {
         }
         print("Done installing " + proj->getId() + ".");
     }
+	printQ("Done.");
 
     StoreFile::getInstance().save();
 
@@ -319,7 +323,8 @@ int remove(std::vector<std::string>* projects) {
     }
     makePath(*loc);
 
-    bool fail = false;;
+	printQ("Resolving projects...");
+    bool fail = false;
     std::vector<LocalProject> resolved = std::vector<LocalProject>(projects->size());
     for (size_t i = 0; i < projects->size(); i++) {
         std::string id = (*projects)[i];
@@ -328,6 +333,7 @@ int remove(std::vector<std::string>* projects) {
         if (proj != NULL) {
             if (!fail) {
                 resolved[i] = *proj;
+				print("Done resolving " + id + ".");
             }
         } else {
             err("No project with ID " + id + " is currently installed.");
@@ -344,12 +350,14 @@ int remove(std::vector<std::string>* projects) {
 
     printRemoveDialog(&resolved);
 
+	printQ("Removing projects...");
     for (size_t i = 0; i < resolved.size(); i++) {
         LocalProject proj = resolved[i];
         print("Removing project " + proj.getId() + "...");
         proj.remove();
         print("Done removing " + proj.getId() + ".");
     }
+	printQ("Done.");
 
     StoreFile::getInstance().save();
 
@@ -377,16 +385,16 @@ static void printInstallDialog(std::vector<RemoteProject*>* projects) {
     }
 
     if (ui > 0) {
-        print("The following projects will be upgraded:");
+		printQ("The following projects will be upgraded:");
         printDialogListing(upgradeList);
     }
 
     if (ii > 0) {
-        print("The following projects will be newly installed:");
+		printQ("The following projects will be newly installed:");
         printDialogListing(installList);
     }
 
-    print(std::to_string(ui) + " upgraded, " + std::to_string(ii) + " newly installed, 0 to remove, "
+	printQ(std::to_string(ui) + " upgraded, " + std::to_string(ii) + " newly installed, 0 to remove, "
         + std::to_string(nu) + " not upgraded.");
 }
 
@@ -397,5 +405,5 @@ static void printRemoveDialog(std::vector<LocalProject>* projects) {
     }
     printDialogListing(removeList);
 
-    print("0 upgraded, 0 newly installed, " + std::to_string(projects->size()) + " to remove, 0 not upgraded.");
+	printQ("0 upgraded, 0 newly installed, " + std::to_string(projects->size()) + " to remove, 0 not upgraded.");
 }
