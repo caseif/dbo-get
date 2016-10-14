@@ -1,9 +1,10 @@
 #include "flags.h"
 
+#include <algorithm>
 #include <map>
 
 static const std::map<char, Flag> FLAGS_SHORTHAND = {{'f', kForce}, {'q', kQuiet}, {'u', kUpdate}, {'v', kVerbose}};
- 
+
 static const std::map<std::string, Flag> FLAGS_LONGHAND = {{"force", kForce}, {"quiet", kQuiet}, {"update", kUpdate}, {"verbose", kVerbose}};
 
 static std::vector<Flag>* flags;
