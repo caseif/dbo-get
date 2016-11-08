@@ -41,13 +41,13 @@ static std::vector<RemoteProject*>* const EMPTY_RPP_VEC = new std::vector<Remote
 static std::vector<std::string>* params;
 
 int main(int argc, char* argv[]) {
+	parseParamsAndFlags(argc, argv);
+
     if (argc < 2) {
         err("Too few args!");
 		print("    Usage: dbo_get <command>");
         return 1;
     }
-
-	parseParamsAndFlags(argc, argv);
 
     char* cmd = argv[1];
     for (auto it = std::begin(CMDS); it != std::end(CMDS); ++it) {
