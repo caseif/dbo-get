@@ -103,7 +103,16 @@ bool RemoteProject::doLookup() {
         err("HTTP request failed: " + errStr);
         return false;
     }
+
+    int responseCode;
+    curl_easy_getinfo(search, CURLINFO_RESPONSE_CODE, &responseCode);
     curl_easy_cleanup(search);
+    if (responseCode / 100 != 2 || res == CURLE_ABORTED_BY_CALLBACK) {
+        err("Remote server returned non-200 response code " + std::to_string(responseCode)
+                + " during lookup.");
+        return false;
+    }
+
 	printV("Done lookup.");
 
     return parseId(json);
@@ -123,8 +132,17 @@ bool RemoteProject::doQuery() {
         err("HTTP request failed: " + errStr);
         return false;
     }
+
+    int responseCode;
+    curl_easy_getinfo(query, CURLINFO_RESPONSE_CODE, &responseCode);
     curl_easy_cleanup(query);
-	printV("Done querying.");
+    if (responseCode / 100 != 2 || res == CURLE_ABORTED_BY_CALLBACK) {
+        err("Remote server returned non-200 response code " + std::to_string(responseCode)
+                + " during query.");
+        return false;
+    }
+
+    printV("Done querying.");
 
     return populateFields(json);
 }
