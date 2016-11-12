@@ -57,6 +57,10 @@ std::string RemoteProject::getFileMD5() {
     return RemoteProject::fileMD5;
 }
 
+Stage RemoteProject::getStage() {
+    return RemoteProject::stage;
+}
+
 int RemoteProject::parseVersion(std::string url) {
     const std::regex r(R"exp(\/(\d{1,4})\/(\d{1,3})\/)exp", std::regex_constants::ECMAScript);
     std::smatch matcher;
@@ -88,7 +92,7 @@ bool RemoteProject::resolve() {
 }
 
 bool RemoteProject::doLookup() {
-	printV("Looking up project " + getId() + " on remote server...");
+    printV("Looking up project " + getId() + " on remote server...");
     CURL* search = curl_easy_init();
     if (!search) {
         return false;
@@ -115,7 +119,7 @@ bool RemoteProject::doLookup() {
         return false;
     }
 
-	printV("Done lookup.");
+    printV("Done lookup.");
 
     try {
         return parseId(json);
@@ -126,7 +130,7 @@ bool RemoteProject::doLookup() {
 }
 
 bool RemoteProject::doQuery() {
-	printV("Querying remote server for project information...");
+    printV("Querying remote server for project information...");
     CURL* query = curl_easy_init();
     std::string json;
     setOptions(query);
@@ -160,7 +164,7 @@ bool RemoteProject::doQuery() {
 }
 
 bool RemoteProject::parseId(std::string json) {
-	printV("Searching for project in returned lookup table...");
+    printV("Searching for project in returned lookup table...");
     Json::Value root;
 
     // jsoncpp includes some error messages that can't be disabled.
@@ -176,7 +180,7 @@ bool RemoteProject::parseId(std::string json) {
     for (Json::ArrayIndex i = 0; i < root.size(); i++) {
         if (root[i]["slug"] == getId()) {
             numId = root[i]["id"].asInt();
-			printV("Found project (ID " + std::to_string(numId) + ").");
+            printV("Found project (ID " + std::to_string(numId) + ").");
             return true;
         } else {
             alts += root[i]["slug"].asString();
@@ -193,7 +197,7 @@ bool RemoteProject::parseId(std::string json) {
 }
 
 bool RemoteProject::populateFields(std::string json) {
-	printV("Populating project " + getId() + " with returned remote information...");
+    printV("Populating project " + getId() + " with returned remote information...");
     Json::Value root;
     
     // Same deal here - evil shit to suppress jsoncpp error messages.
@@ -216,6 +220,7 @@ bool RemoteProject::populateFields(std::string json) {
     if (version == -1) {
         return false;
     }
+    stage = stageFromString(latest["stage"].asString());
     fileName = latest["fileName"].asString();
     fileMD5 = latest["md5"].asString();
 
@@ -223,15 +228,15 @@ bool RemoteProject::populateFields(std::string json) {
         err("Failed to fetch metadata of latest artifact for project " + getId() + ".");
         return false;
     }
-	printV("Done populating.");
+    printV("Done populating.");
     return true;
 }
 
 static size_t write_callback(char* ptr, size_t size, size_t nmemb, void* userdata) {
-	std::ofstream* out = static_cast<std::ofstream*>(userdata);
-	size_t nbytes = size * nmemb;
-	out->write(ptr, nbytes);
-	return nbytes;
+    std::ofstream* out = static_cast<std::ofstream*>(userdata);
+    size_t nbytes = size * nmemb;
+    out->write(ptr, nbytes);
+    return nbytes;
 }
 
 bool RemoteProject::install() {
@@ -240,8 +245,8 @@ bool RemoteProject::install() {
     for (int i = 1; i <= DOWNLOAD_ATTEMPTS; i++) {
         makePath(getDownloadCache());
         std::string fileName = getDownloadCache() + "/" + getFileName();
-		printV("Downloading to " + fileName + " from " + getFileUrl() + ".");
-		std::ofstream output(fileName, std::ios::binary | std::ios_base::out);
+        printV("Downloading to " + fileName + " from " + getFileUrl() + ".");
+        std::ofstream output(fileName, std::ios::binary | std::ios_base::out);
         CURL* query = curl_easy_init();
         curl_easy_setopt(query, CURLOPT_WRITEFUNCTION, write_callback);
         curl_easy_setopt(query, CURLOPT_WRITEDATA, &output);
@@ -253,7 +258,7 @@ bool RemoteProject::install() {
 
         CURLcode res = curl_easy_perform(query);
 
-		output.close();
+        output.close();
 
         if (res != CURLE_OK) {
             std::string errStr = std::string(curl_easy_strerror(res));
@@ -261,15 +266,15 @@ bool RemoteProject::install() {
             return false;
         }
         curl_easy_cleanup(query);
-		printV("Done downloading.");
+        printV("Done downloading.");
 
-		FILE* data = fopen(fileName.c_str(), "rb");
-		if (!data) {
-			err("Failed to open destination file for writing.");
-			return false;
-		}
+        FILE* data = fopen(fileName.c_str(), "rb");
+        if (!data) {
+            err("Failed to open destination file for writing.");
+            return false;
+        }
 
-		printV("Verifying MD5 checksum of downloaded file...");
+        printV("Verifying MD5 checksum of downloaded file...");
         std::string actualMD5 = md5(data);
         if (getFileMD5() != actualMD5) {
             err("Unexpected MD5 for file for project " + getId() + ".");
@@ -284,34 +289,34 @@ bool RemoteProject::install() {
             }
         }
         fclose(data);
-		break;
+        break;
     }
 
-	std::vector<std::string>* files = installFiles();
+    std::vector<std::string>* files = installFiles();
     StoreFile::getInstance().addProject(new LocalProject(id, numId, version, files));
 
     return true;
 }
 
 std::vector<std::string>* RemoteProject::installFiles() {
-	if (ends_with(getFileName(), ".jar")) {
-		std::ifstream src(getDownloadCache() + "/" + getFileName(), std::ios::binary);
-		if (!src.is_open()) {
-			perror("Failed to read file from download cache.");
-		}
-		std::ofstream dst(*Config::getInstance().get(Config::KEY_STORE) + "/" + getFileName(), std::ios::binary | std::ios_base::out);
-		dst << src.rdbuf();
-		dst.flush();
-		dst.close();
-		src.close();
+    if (ends_with(getFileName(), ".jar")) {
+        std::ifstream src(getDownloadCache() + "/" + getFileName(), std::ios::binary);
+        if (!src.is_open()) {
+            perror("Failed to read file from download cache.");
+        }
+        std::ofstream dst(*Config::getInstance().get(Config::KEY_STORE) + "/" + getFileName(), std::ios::binary | std::ios_base::out);
+        dst << src.rdbuf();
+        dst.flush();
+        dst.close();
+        src.close();
 
-		std::vector<std::string>* files = new std::vector<std::string>(1); //TODO
-		(*files)[0] = getFileName();
-		return files;
-	} else { // it's probably an archive
-		print("Extracting files for project " + getId() + ".");
-		return unzip(getDownloadCache() + "/" + getFileName(), *Config::getInstance().get(Config::KEY_STORE));
-	}
+        std::vector<std::string>* files = new std::vector<std::string>(1); //TODO
+        (*files)[0] = getFileName();
+        return files;
+    } else { // it's probably an archive
+        print("Extracting files for project " + getId() + ".");
+        return unzip(getDownloadCache() + "/" + getFileName(), *Config::getInstance().get(Config::KEY_STORE));
+    }
 }
 
 LocalProject::LocalProject() {

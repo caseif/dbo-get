@@ -9,7 +9,7 @@
 const std::string Config::KEY_STORE = "store";
 
 Config::Config() {
-	load();
+    load();
 }
 
 Config& Config::getInstance() {
@@ -18,7 +18,7 @@ Config& Config::getInstance() {
 }
 
 void Config::load() {
-	printV("Loading config from disk...");
+    printV("Loading config from disk...");
     std::ifstream fileStream(getConfigFile());
     if (!fileStream.is_open()) {
         print("Warning: failed to read global config file");
@@ -32,11 +32,11 @@ void Config::load() {
         std::string value = str.substr(eqInd + 1, str.length() - eqInd - 2);
         configMap[key] = value;
     }
-	printV("Done loading config.");
+    printV("Done loading config.");
 }
 
 void Config::save() {
-	printV("Saving config to disk...");
+    printV("Saving config to disk...");
     makePath(getConfigDir());
     std::ofstream fileStream(getConfigFile(), std::fstream::trunc);
     typedef std::map<std::string, std::string>::iterator str_str_map_it;
@@ -44,7 +44,7 @@ void Config::save() {
         fileStream << it->first << "=" << it->second << "\n";
     }
     fileStream.close();
-	printV("Done saving config.");
+    printV("Done saving config.");
 }
 
 std::string* Config::get(std::string key) {

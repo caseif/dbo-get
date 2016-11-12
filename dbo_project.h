@@ -1,5 +1,7 @@
 #pragma once
 
+#include "stage.h"
+
 class DboProject {
 protected:
         std::string id;
@@ -18,6 +20,7 @@ class RemoteProject : public DboProject {
         std::string fileUrl;
         std::string fileName;
         std::string fileMD5;
+        Stage stage;
 
         std::vector<std::string>* installFiles();
         int parseVersion(std::string url);
@@ -32,6 +35,7 @@ class RemoteProject : public DboProject {
         std::string getFileUrl();
         std::string getFileName();
         std::string getFileMD5();
+        Stage getStage();
         bool resolve();
         bool install();
 };
