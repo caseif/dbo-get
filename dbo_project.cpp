@@ -7,7 +7,9 @@
 #include <fstream>
 #include <iterator>
 #include <regex>
+#include <stdio.h>
 #include <string>
+#include <unistd.h>
 
 #include <curl/curl.h>
 #include <json/json.h>
@@ -108,14 +110,19 @@ bool RemoteProject::doLookup() {
     curl_easy_getinfo(search, CURLINFO_RESPONSE_CODE, &responseCode);
     curl_easy_cleanup(search);
     if (responseCode / 100 != 2 || res == CURLE_ABORTED_BY_CALLBACK) {
-        err("Remote server returned non-200 response code " + std::to_string(responseCode)
-                + " during lookup.");
+        err("Remote server returned response code " + std::to_string(responseCode)
+                + " on project lookup.");
         return false;
     }
 
 	printV("Done lookup.");
 
-    return parseId(json);
+    try {
+        return parseId(json);
+    } catch (Json::RuntimeError ex) {
+        err("Remote returned malformed JSON on project lookup.");
+        return false;
+    }
 }
 
 bool RemoteProject::doQuery() {
@@ -137,22 +144,35 @@ bool RemoteProject::doQuery() {
     curl_easy_getinfo(query, CURLINFO_RESPONSE_CODE, &responseCode);
     curl_easy_cleanup(query);
     if (responseCode / 100 != 2 || res == CURLE_ABORTED_BY_CALLBACK) {
-        err("Remote server returned non-200 response code " + std::to_string(responseCode)
-                + " during query.");
+        err("Remote server returned response code " + std::to_string(responseCode)
+                + " on project query.");
         return false;
     }
 
     printV("Done querying.");
 
-    return populateFields(json);
+    try {
+        return populateFields(json);
+    } catch (Json::RuntimeError ex) {
+        err("Remote returned malformed JSON on project query.");
+        return false;
+    }
 }
 
 bool RemoteProject::parseId(std::string json) {
 	printV("Searching for project in returned lookup table...");
     Json::Value root;
+
+    // jsoncpp includes some error messages that can't be disabled.
+    // We don't want that, so we gotta do some real evil shit to suppress them.
+    int o = dup(fileno(stderr));
+    fclose(stderr);
     std::stringstream contentStream(json);
     std::string alts = "";
     contentStream >> root;
+    dup2(o, fileno(stderr));
+    close(o);
+
     for (Json::ArrayIndex i = 0; i < root.size(); i++) {
         if (root[i]["slug"] == getId()) {
             numId = root[i]["id"].asInt();
@@ -175,12 +195,20 @@ bool RemoteProject::parseId(std::string json) {
 bool RemoteProject::populateFields(std::string json) {
 	printV("Populating project " + getId() + " with returned remote information...");
     Json::Value root;
+    
+    // Same deal here - evil shit to suppress jsoncpp error messages.
+    int o = dup(fileno(stderr));
+    fclose(stderr);
     std::stringstream contentStream(json);
     contentStream >> root;
+    dup2(o, fileno(stderr));
+    close(o);
+
     if (root.size() == 0) {
         err("No artifacts available for project " + getId() + ".");
         return false;
     }
+
     Json::Value latest = root[root.size() - 1];
     std::string name = latest["name"].asString();
     fileUrl = latest["downloadUrl"].asString();
