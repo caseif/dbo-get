@@ -4,10 +4,10 @@
 #include <vector>
 
 enum Flag {
-	kForce,
-	kQuiet,
-	kUpdate,
-	kVerbose
+    kForce,
+    kQuiet,
+    kUpdate,
+    kVerbose
 };
 
 void setFlags(std::vector<Flag>* paramFlags);

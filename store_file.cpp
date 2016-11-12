@@ -28,10 +28,10 @@ std::string StoreFile::getPath() {
 void StoreFile::load() {
     assert(!initialized);
 
-	std::string path = getPath();
+    std::string path = getPath();
 
-	printV("Loading store file from disk...");
-	printV("Loading from " + path + ".");
+    printV("Loading store file from disk...");
+    printV("Loading from " + path + ".");
 
     Json::Value root;
     std::ifstream fileStream(path);
@@ -58,14 +58,14 @@ void StoreFile::load() {
     }
 
     initialized = true;
-	printV("Done loading store file.");
+    printV("Done loading store file.");
 }
 
 void StoreFile::save() {
-	std::string path = getPath();
+    std::string path = getPath();
 
-	printV("Saving store file to disk...");
-	printV("Saving to " + path);
+    printV("Saving store file to disk...");
+    printV("Saving to " + path);
 
     Json::Value root = Json::Value();
     Json::ArrayIndex ind = 0;
@@ -89,7 +89,7 @@ void StoreFile::save() {
     fileStream << root;
     fileStream.close();
 
-	printV("Done saving store file.");
+    printV("Done saving store file.");
 }
 
 LocalProject* StoreFile::getProject(std::string id) {

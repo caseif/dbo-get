@@ -41,11 +41,11 @@ static std::vector<RemoteProject*>* const EMPTY_RPP_VEC = new std::vector<Remote
 static std::vector<std::string>* params;
 
 int main(int argc, char* argv[]) {
-	parseParamsAndFlags(argc, argv);
+    parseParamsAndFlags(argc, argv);
 
     if (argc < 2) {
         err("Too few args!");
-		print("    Usage: dbo_get <command>");
+        print("    Usage: dbo_get <command>");
         return 1;
     }
 
@@ -60,59 +60,59 @@ int main(int argc, char* argv[]) {
 }
 
 void parseParamsAndFlags(int argc, char* argv[]) {
-	int paramCount = 0;
-	int flagCount = 0;
-	for (int i = 2; i < argc; i++) {
-		if (argv[i][0] == '-') {
-			flagCount += argv[i][1] == '-' ? 1 : std::strlen(argv[i]) - 1;
-		} else {
-			paramCount++;
-		}
-	}
+    int paramCount = 0;
+    int flagCount = 0;
+    for (int i = 2; i < argc; i++) {
+        if (argv[i][0] == '-') {
+            flagCount += argv[i][1] == '-' ? 1 : std::strlen(argv[i]) - 1;
+        } else {
+            paramCount++;
+        }
+    }
 
     params = new std::vector<std::string>(paramCount);
-	std::vector<Flag>* flags = new std::vector<Flag>(flagCount);
+    std::vector<Flag>* flags = new std::vector<Flag>(flagCount);
     int p = 0;
-	int f = 0;
+    int f = 0;
     for (int i = 2; i < argc; i++) {
-		if (argv[i][0] == '-') {
-			if (argv[i][1] == '-') {
-				std::string name = std::string(argv[i] + 2);
-				const Flag* flag = matchFlag(name);
-				if (flag == NULL) {
-					invalidFlag(name);
-					exit(1);
-				} else {
-					(*flags)[f++] = *flag;
-				}
-			} else {
-				for (size_t j = 1; j < std::strlen(argv[i]); j++) {
-					const Flag* flag = matchFlag(argv[i][j]);
-					if (flag == NULL) {
-						invalidFlag(argv[i][j]);
-						exit(1);
-					} else {
-						(*flags)[f++] = *flag;
-					}
-				}
-			}
-		} else {
+        if (argv[i][0] == '-') {
+            if (argv[i][1] == '-') {
+                std::string name = std::string(argv[i] + 2);
+                const Flag* flag = matchFlag(name);
+                if (flag == NULL) {
+                    invalidFlag(name);
+                    exit(1);
+                } else {
+                    (*flags)[f++] = *flag;
+                }
+            } else {
+                for (size_t j = 1; j < std::strlen(argv[i]); j++) {
+                    const Flag* flag = matchFlag(argv[i][j]);
+                    if (flag == NULL) {
+                        invalidFlag(argv[i][j]);
+                        exit(1);
+                    } else {
+                        (*flags)[f++] = *flag;
+                    }
+                }
+            }
+        } else {
             (*params)[p++] = argv[i];
         }
     }
 
-	setFlags(flags);
+    setFlags(flags);
 
-	if (testFlag(Flag::kQuiet) && testFlag(Flag::kVerbose)) {
-		err("Quiet and verbose flags cannot be used in conjunction.");
-		exit(1);
-	}
+    if (testFlag(Flag::kQuiet) && testFlag(Flag::kVerbose)) {
+        err("Quiet and verbose flags cannot be used in conjunction.");
+        exit(1);
+    }
 }
 
 int handleStoreCmd(int argc, char* argv[]) {
     if (argc < 3) {
         std::string* loc = Config::getInstance().get(Config::KEY_STORE);
-		printQ("Current store location: " + (loc == NULL ? "NOT SET" : *loc));
+        printQ("Current store location: " + (loc == NULL ? "NOT SET" : *loc));
         return 0;
     }
 
@@ -127,7 +127,7 @@ int handleStoreCmd(int argc, char* argv[]) {
     std::replace(path.begin(), path.end(), '\\', '/');
     Config::getInstance().set(Config::KEY_STORE, path);
     makePath(path);
-	printQ("Successfully set store location as \"" + path + "\".");
+    printQ("Successfully set store location as \"" + path + "\".");
 
     return 0;
 }
@@ -139,7 +139,7 @@ std::vector<RemoteProject*>* resolve(std::vector<std::string>* projects, bool ig
     bool fail = false;
     bool empty = true;
     curl_global_init(CURL_GLOBAL_ALL);
-	bool forceUpdate = testFlag(Flag::kUpdate);
+    bool forceUpdate = testFlag(Flag::kUpdate);
     for (size_t i = 0; i < projects->size(); i++) {
         std::string id = (*projects)[i];
         print("Resolving project " + id + "...");
@@ -172,13 +172,13 @@ static void printDialogListing(std::vector<std::string> projects) {
         }
         std::string newLine = line + projects[i];
         if (line.length() + 1 > INSTALL_DIALOG_LINE_LENGTH) {
-			printQ(line);
+            printQ(line);
             line = "  " + projects[i];
         } else {
             line = newLine + " ";
         }
     }
-	printQ(line);
+    printQ(line);
 }
 
 int handleInstallCmd(int argc, char* argv[]) {
@@ -207,22 +207,22 @@ int handleRemoveCmd(int argc, char* argv[]) {
 }
 
 void printFlag(std::string name, char shorthand, std::string description) {
-	std::string start = "  -" + std::string(&shorthand, 1) + ", --" + name;
-	std::string indent = "";
-	for (int i = start.length(); i < HELP_FLAG_INDENT_SIZE; i++) {
-		indent += " ";
-	}
-	printQ(start + indent + description);
+    std::string start = "  -" + std::string(&shorthand, 1) + ", --" + name;
+    std::string indent = "";
+    for (int i = start.length(); i < HELP_FLAG_INDENT_SIZE; i++) {
+        indent += " ";
+    }
+    printQ(start + indent + description);
 }
 
 int handleHelpCmd(int argc, char* argv[]) {
     if (argc == 2) {
         printInfoHeader();
-		printQ("Flags:");
-		printFlag("force", 'f', "Forces dbo-get to upgrade packages without comparing versions at all.");
-		printFlag("quiet", 'q', "Enables quiet logging and suppresses much of the normal output.");
-		printFlag("verbose", 'v', "Enables verbose logging.");
-		printQ("Commands:");
+        printQ("Flags:");
+        printFlag("force", 'f', "Forces dbo-get to upgrade packages without comparing versions at all.");
+        printFlag("quiet", 'q', "Enables quiet logging and suppresses much of the normal output.");
+        printFlag("verbose", 'v', "Enables verbose logging.");
+        printQ("Commands:");
         for (auto it = std::begin(CMDS); it != std::end(CMDS); ++it) {
             if ((*it)->isDocumented()) {
                 printHelp(*it);
@@ -248,12 +248,12 @@ int handleHelpCmd(int argc, char* argv[]) {
 }
 
 void printInfoHeader() {
-	printQ("dbo-get v" + VERSION + ".");
-	printQ("Copyright (c) 2016 Max Roncace.");
-	printQ("");
-	printQ("dbo-get is a utility for installing and managing projects hosted by BukkitDev,");
-	printQ("the premier hosting service for Bukkit software.");
-	printQ("");
+    printQ("dbo-get v" + VERSION + ".");
+    printQ("Copyright (c) 2016 Max Roncace.");
+    printQ("");
+    printQ("dbo-get is a utility for installing and managing projects hosted by BukkitDev,");
+    printQ("the premier hosting service for Bukkit software.");
+    printQ("");
 }
 
 void printHelp(Command* cmd) {
@@ -261,7 +261,7 @@ void printHelp(Command* cmd) {
     for (int i = cmd->getLabel().length(); i < HELP_CMD_INDENT_SIZE; i++) {
         indent += " ";
     }
-	printQ("  " + cmd->getLabel() + indent + cmd->getDescription());
+    printQ("  " + cmd->getLabel() + indent + cmd->getDescription());
     std::string indent2 = indent;
     for (size_t i = 0; i < cmd->getLabel().length() + 4; i++) {
         indent2 += " ";
@@ -270,33 +270,33 @@ void printHelp(Command* cmd) {
 }
 
 int handleMooCmd(int argc, char* argv[]) {
-	int vs = testFlagi(Flag::kVerbose);
-	switch (vs) {
-	case 0:
-		printQ("Yes, you're very clever.");
-		break;
-	case 1:
-		printQ("Hey, what are you doing?");
-		break;
-	case 2:
-		printQ("Mhm, I get it, haha. Funny.");
-		break;
-	case 3:
-		printQ("You really want this, don't you?");
-		break;
-	case 4:
-		printQ("Alright, very well.");
-		break;
-	case 5:
-		printArt();
-		break;
-	case 50:
-		printQ("Someone's been rummaging through the source, mm?");
-		break;
-	default:
-		printQ("Happy?");
-		break;
-	}
+    int vs = testFlagi(Flag::kVerbose);
+    switch (vs) {
+    case 0:
+        printQ("Yes, you're very clever.");
+        break;
+    case 1:
+        printQ("Hey, what are you doing?");
+        break;
+    case 2:
+        printQ("Mhm, I get it, haha. Funny.");
+        break;
+    case 3:
+        printQ("You really want this, don't you?");
+        break;
+    case 4:
+        printQ("Alright, very well.");
+        break;
+    case 5:
+        printArt();
+        break;
+    case 50:
+        printQ("Someone's been rummaging through the source, mm?");
+        break;
+    default:
+        printQ("Happy?");
+        break;
+    }
     return 0;
 }
 
@@ -324,7 +324,7 @@ int install(std::vector<std::string>* projects, bool ignoreFail) {
 
     printInstallDialog(resolved);
 
-	printQ("Installing projects...");
+    printQ("Installing projects...");
     for (size_t i = 0; i < resolved->size(); i++) {
         RemoteProject* proj = (*resolved)[i];
         if (proj == NULL) {
@@ -346,7 +346,7 @@ int install(std::vector<std::string>* projects, bool ignoreFail) {
         }
         print("Done installing " + proj->getId() + ".");
     }
-	printQ("Done.");
+    printQ("Done.");
 
     StoreFile::getInstance().save();
 
@@ -361,7 +361,7 @@ int remove(std::vector<std::string>* projects) {
     }
     makePath(*loc);
 
-	printQ("Resolving projects...");
+    printQ("Resolving projects...");
     bool fail = false;
     std::vector<LocalProject> resolved = std::vector<LocalProject>(projects->size());
     for (size_t i = 0; i < projects->size(); i++) {
@@ -371,7 +371,7 @@ int remove(std::vector<std::string>* projects) {
         if (proj != NULL) {
             if (!fail) {
                 resolved[i] = *proj;
-				print("Done resolving " + id + ".");
+                print("Done resolving " + id + ".");
             }
         } else {
             err("No project with ID " + id + " is currently installed.");
@@ -388,14 +388,14 @@ int remove(std::vector<std::string>* projects) {
 
     printRemoveDialog(&resolved);
 
-	printQ("Removing projects...");
+    printQ("Removing projects...");
     for (size_t i = 0; i < resolved.size(); i++) {
         LocalProject proj = resolved[i];
         print("Removing project " + proj.getId() + "...");
         proj.remove();
         print("Done removing " + proj.getId() + ".");
     }
-	printQ("Done.");
+    printQ("Done.");
 
     StoreFile::getInstance().save();
 
@@ -423,16 +423,16 @@ static void printInstallDialog(std::vector<RemoteProject*>* projects) {
     }
 
     if (ui > 0) {
-		printQ("The following projects will be upgraded:");
+        printQ("The following projects will be upgraded:");
         printDialogListing(upgradeList);
     }
 
     if (ii > 0) {
-		printQ("The following projects will be newly installed:");
+        printQ("The following projects will be newly installed:");
         printDialogListing(installList);
     }
 
-	printQ(std::to_string(ui) + " upgraded, " + std::to_string(ii) + " newly installed, 0 to remove, "
+    printQ(std::to_string(ui) + " upgraded, " + std::to_string(ii) + " newly installed, 0 to remove, "
         + std::to_string(nu) + " not upgraded.");
 }
 
@@ -443,5 +443,5 @@ static void printRemoveDialog(std::vector<LocalProject>* projects) {
     }
     printDialogListing(removeList);
 
-	printQ("0 upgraded, 0 newly installed, " + std::to_string(projects->size()) + " to remove, 0 not upgraded.");
+    printQ("0 upgraded, 0 newly installed, " + std::to_string(projects->size()) + " to remove, 0 not upgraded.");
 }

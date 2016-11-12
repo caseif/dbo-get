@@ -6,7 +6,7 @@
 class Config {
     private:
         std::map<std::string, std::string> configMap;
-		void load();
+        void load();
         void save();
     public:
         Config();

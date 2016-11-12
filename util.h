@@ -18,19 +18,19 @@
 #include "flags.h"
 
 inline void printQ(std::string str) {
-	std::cout << str.c_str() << std::endl;
+    std::cout << str.c_str() << std::endl;
 }
 
 inline void print(std::string str) {
-	if (!testFlag(Flag::kQuiet)) {
-		std::cout << str.c_str() << std::endl;
-	}
+    if (!testFlag(Flag::kQuiet)) {
+        std::cout << str.c_str() << std::endl;
+    }
 }
 
 inline void printV(std::string str) {
-	if (testFlag(Flag::kVerbose)) {
-		std::cout << str.c_str() << std::endl;
-	}
+    if (testFlag(Flag::kVerbose)) {
+        std::cout << str.c_str() << std::endl;
+    }
 }
 
 inline void err(std::string str) {
@@ -48,24 +48,24 @@ inline void tooManyArgs(std::string command, std::string usage) {
 }
 
 inline void invalidFlag(std::string flag) {
-	err("Unknown flag '" + flag + "', try `dbo-get help`.");
+    err("Unknown flag '" + flag + "', try `dbo-get help`.");
 }
 
 inline void invalidFlag(char flag) {
-	err("Unknown flag '" + std::string(&flag, 1) + "', try `dbo-get help`.");
+    err("Unknown flag '" + std::string(&flag, 1) + "', try `dbo-get help`.");
 }
 
 inline void printArt() {
-	printQ(R"R(           _.  )R");
-	printQ(R"R(        ;=',_  )R");
-	printQ(R"R(       S" .--` )R");
-	printQ(R"R(      sS  \__  )R");
-	printQ(R"R(   __.' ( \--> )R");
-	printQ(R"R( _=/    _./-\/  )R");
-	printQ(R"R(((\( /-'   -'l  )R");
-	printQ(R"R( ) |/ \\    )R");
-	printQ(R"R(    \\  \ )R");
-	printQ(R"R(     `~ `~)R");
+    printQ(R"R(           _.  )R");
+    printQ(R"R(        ;=',_  )R");
+    printQ(R"R(       S" .--` )R");
+    printQ(R"R(      sS  \__  )R");
+    printQ(R"R(   __.' ( \--> )R");
+    printQ(R"R( _=/    _./-\/  )R");
+    printQ(R"R(((\( /-'   -'l  )R");
+    printQ(R"R( ) |/ \\    )R");
+    printQ(R"R(    \\  \ )R");
+    printQ(R"R(     `~ `~)R");
 }
 
 size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb, std::string *s);
@@ -85,8 +85,8 @@ std::string getDownloadCache();
 std::string md5(FILE* file);
 
 inline bool ends_with(std::string const &value, std::string const &ending) {
-	if (ending.size() > value.size()) {
-		return false;
-	}
-	return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+    if (ending.size() > value.size()) {
+        return false;
+    }
+    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 }
