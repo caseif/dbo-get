@@ -17,27 +17,27 @@
 #include "store_file.h"
 #include "util.h"
 
-static const std::string VERSION = "0.3.0-SNAPSHOT";
+static const std::string kVersion = "0.3.0-SNAPSHOT";
 
-static const int INSTALL_DIALOG_LINE_LENGTH = 80;
-static const int HELP_CMD_INDENT_SIZE = 10;
-static const int HELP_FLAG_INDENT_SIZE = 18;
+static const int kInstallDialogLineLength = 80;
+static const int kHelpCmdIndentSize = 10;
+static const int kHelpFlagIndentSize = 18;
 
-Command* const CMD_STORE = new Command("store", "[location]",
+Command* const kCmdStore = new Command("store", "[location]",
         "Gets or sets the current store location.", &handleStoreCmd);
-Command* const CMD_INSTALL = new Command("install", "<projects>...",
+Command* const kCmdInstall = new Command("install", "<projects>...",
         "Installs or upgrades the specified projects to the current store.", &handleInstallCmd);
-Command* const CMD_UPGRADE = new Command("upgrade", "",
+Command* const kCmdUpgrade = new Command("upgrade", "",
         "Attempts to upgrade all projects installed to the current store.", &handleUpgradeCmd);
-Command* const CMD_REMOVE = new Command("remove", "<projects>...",
+Command* const kCmdRemove = new Command("remove", "<projects>...",
         "Removes the specified projects from the current store.", &handleRemoveCmd);
-Command* const CMD_HELP = new Command("help", "[command]",
+Command* const kCmdHelp = new Command("help", "[command]",
         "Displays help for one or all commands.", &handleHelpCmd);
-Command* const CMD_MOO = new Command("moo", "",
+Command* const kCmdMoo = new Command("moo", "",
         "Have you mooed today?", &handleMooCmd, false);
-Command* const CMDS[] = {CMD_STORE, CMD_INSTALL, CMD_REMOVE, CMD_UPGRADE, CMD_HELP, CMD_MOO};
+Command* const kCmds[] = {kCmdStore, kCmdInstall, kCmdRemove, kCmdUpgrade, kCmdHelp, kCmdMoo};
 
-static std::vector<RemoteProject*>* const EMPTY_RPP_VEC = new std::vector<RemoteProject*>(0);
+static std::vector<RemoteProject*>* const kEmptyRppVec = new std::vector<RemoteProject*>(0);
 
 static std::vector<std::string>* params;
 
@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
     }
 
     char* cmd = argv[1];
-    for (auto it = std::begin(CMDS); it != std::end(CMDS); ++it) {
+    for (auto it = std::begin(kCmds); it != std::end(kCmds); ++it) {
         if (matchCmd(cmd, (*it)->getLabel())) {
             return (*it)->getHandler()(argc, argv);
         }
@@ -160,7 +160,7 @@ std::vector<RemoteProject*>* resolve(std::vector<std::string>* projects, bool ig
                 if (!testFlag(kForce)) {
                     err("Project " + id + " has status " + stringFromStage(remote->getStage()) + ". If you wish to " 
                             + "install it anyway, run the program with the force-install flag (-f, --force).");
-                    return false;
+                    return NULL;
                 } else {
                     printV("Going forward with installation of project " + id + " despite having stage "
                             + stringFromStage(remote->getStage()) + " due to force-install flag.");
@@ -179,7 +179,7 @@ std::vector<RemoteProject*>* resolve(std::vector<std::string>* projects, bool ig
         print("Done resolving " + id + ".");
     }
     curl_global_cleanup();
-    return fail ? NULL : (!empty ? vec : EMPTY_RPP_VEC);
+    return fail ? NULL : (!empty ? vec : kEmptyRppVec);
 }
 
 static void printDialogListing(std::vector<std::string> projects) {
@@ -189,7 +189,7 @@ static void printDialogListing(std::vector<std::string> projects) {
             break;
         }
         std::string newLine = line + projects[i];
-        if (line.length() + 1 > INSTALL_DIALOG_LINE_LENGTH) {
+        if (line.length() + 1 > kInstallDialogLineLength) {
             printQ(line);
             line = "  " + projects[i];
         } else {
@@ -201,7 +201,7 @@ static void printDialogListing(std::vector<std::string> projects) {
 
 int handleInstallCmd(int argc, char* argv[]) {
     if (argc < 3) {
-        tooFewArgs(CMD_INSTALL->getLabel(), CMD_INSTALL->getUsage());
+        tooFewArgs(kCmdInstall->getLabel(), kCmdInstall->getUsage());
         return 1;
     }
     return install(params, false);
@@ -209,7 +209,7 @@ int handleInstallCmd(int argc, char* argv[]) {
 
 int handleUpgradeCmd(int argc, char* argv[]) {
     if (argc >= 3) {
-        tooFewArgs(CMD_UPGRADE->getLabel(), CMD_UPGRADE->getUsage());
+        tooFewArgs(kCmdUpgrade->getLabel(), kCmdUpgrade->getUsage());
         return 1;
     }
     std::vector<std::string>* projects = StoreFile::getInstance().getProjectIds();
@@ -218,7 +218,7 @@ int handleUpgradeCmd(int argc, char* argv[]) {
 
 int handleRemoveCmd(int argc, char* argv[]) {
     if (argc < 3) {
-        tooFewArgs(CMD_REMOVE->getLabel(), CMD_REMOVE->getUsage());
+        tooFewArgs(kCmdRemove->getLabel(), kCmdRemove->getUsage());
         return 1;
     }
     return remove(params);
@@ -227,7 +227,7 @@ int handleRemoveCmd(int argc, char* argv[]) {
 void printFlag(std::string name, char shorthand, std::string description) {
     std::string start = "  -" + std::string(&shorthand, 1) + ", --" + name;
     std::string indent = "";
-    for (int i = start.length(); i < HELP_FLAG_INDENT_SIZE; i++) {
+    for (int i = start.length(); i < kHelpFlagIndentSize; i++) {
         indent += " ";
     }
     printQ(start + indent + description);
@@ -237,18 +237,18 @@ int handleHelpCmd(int argc, char* argv[]) {
     if (argc == 2) {
         printInfoHeader();
         printQ("Flags:");
-        printFlag("force", 'f', "Forces dbo-get to upgrade packages without comparing versions at all.");
+        printFlag("force", 'f', "Forces dbo-get to upgrade packages without comparing kVersions at all.");
         printFlag("quiet", 'q', "Enables quiet logging and suppresses much of the normal output.");
         printFlag("verbose", 'v', "Enables verbose logging.");
         printQ("Commands:");
-        for (auto it = std::begin(CMDS); it != std::end(CMDS); ++it) {
+        for (auto it = std::begin(kCmds); it != std::end(kCmds); ++it) {
             if ((*it)->isDocumented()) {
                 printHelp(*it);
             }
         }
         return 0;
     } else if (argc == 3) {
-        for (auto it = std::begin(CMDS); it != std::end(CMDS); ++it) {
+        for (auto it = std::begin(kCmds); it != std::end(kCmds); ++it) {
             if (matchCmd(argv[2], (*it)->getLabel())) {
                 if (!(*it)->isDocumented()) {
                     break;
@@ -260,13 +260,13 @@ int handleHelpCmd(int argc, char* argv[]) {
         err("Cannot display help: invalid command specified.");
         return 1;
     } else {
-        tooManyArgs(CMD_HELP->getLabel(), CMD_HELP->getUsage());
+        tooManyArgs(kCmdHelp->getLabel(), kCmdHelp->getUsage());
         return 1;
     }
 }
 
 void printInfoHeader() {
-    printQ("dbo-get v" + VERSION + ".");
+    printQ("dbo-get v" + kVersion + ".");
     printQ("Copyright (c) 2016 Max Roncace.");
     printQ("");
     printQ("dbo-get is a utility for installing and managing projects hosted by BukkitDev,");
@@ -276,7 +276,7 @@ void printInfoHeader() {
 
 void printHelp(Command* cmd) {
     std::string indent = "";
-    for (int i = cmd->getLabel().length(); i < HELP_CMD_INDENT_SIZE; i++) {
+    for (int i = cmd->getLabel().length(); i < kHelpCmdIndentSize; i++) {
         indent += " ";
     }
     printQ("  " + cmd->getLabel() + indent + cmd->getDescription());
