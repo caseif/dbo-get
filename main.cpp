@@ -13,6 +13,7 @@
 #include "dbo_project.h"
 #include "flags.h"
 #include "main.h"
+#include "stage.h"
 #include "store_file.h"
 #include "util.h"
 
@@ -152,6 +153,23 @@ std::vector<RemoteProject*>* resolve(std::vector<std::string>* projects, bool ig
         }
 
         LocalProject* local = StoreFile::getInstance().getProject(id);
+
+        if (std::find(kDisallowedStages.begin(), kDisallowedStages.end(),
+                remote->getStage()) != kDisallowedStages.end()) {
+            if (local == NULL) {
+                if (!testFlag(kForce)) {
+                    err("Project " + id + " has status " + stringFromStage(remote->getStage()) + ". If you wish to " 
+                            + "install it anyway, run the program with the force-install flag (-f, --force).");
+                    return false;
+                } else {
+                    printV("Going forward with installation of project " + id + " despite having stage "
+                            + stringFromStage(remote->getStage()) + " due to force-install flag.");
+                }
+            } else {
+                printV("Going forward with installation project " + id + " despite having stage "
+                            + stringFromStage(remote->getStage()) + " due to previously installed artifact.");
+            }
+        }
 
         if (local == NULL || forceUpdate || remote->getVersion() > local->getVersion()) {
             (*vec)[i] = remote;

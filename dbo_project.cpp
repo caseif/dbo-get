@@ -180,6 +180,7 @@ bool RemoteProject::parseId(std::string json) {
     for (Json::ArrayIndex i = 0; i < root.size(); i++) {
         if (root[i]["slug"] == getId()) {
             numId = root[i]["id"].asInt();
+            stage = stageFromString(root[i]["stage"].asString());
             printV("Found project (ID " + std::to_string(numId) + ").");
             return true;
         } else {
@@ -220,7 +221,6 @@ bool RemoteProject::populateFields(std::string json) {
     if (version == -1) {
         return false;
     }
-    stage = stageFromString(latest["stage"].asString());
     fileName = latest["fileName"].asString();
     fileMD5 = latest["md5"].asString();
 
