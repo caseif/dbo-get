@@ -237,8 +237,9 @@ int handleHelpCmd(int argc, char* argv[]) {
     if (argc == 2) {
         printInfoHeader();
         printQ("Flags:");
-        printFlag("force", 'f', "Forces dbo-get to upgrade packages without comparing kVersions at all.");
+        printFlag("force", 'f', "Forces dbo-get to install packages without considering remote stages.");
         printFlag("quiet", 'q', "Enables quiet logging and suppresses much of the normal output.");
+        printFlag("update", 'u', "Forces dbo-get to upgrade packages without comparing versions.");
         printFlag("verbose", 'v', "Enables verbose logging.");
         printQ("Commands:");
         for (auto it = std::begin(kCmds); it != std::end(kCmds); ++it) {
