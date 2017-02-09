@@ -268,7 +268,7 @@ int handleHelpCmd(int argc, char* argv[]) {
 
 void printInfoHeader() {
     printQ("dbo-get v" + kVersion + ".");
-    printQ("Copyright (c) 2016 Max Roncace.");
+    printQ("Copyright (c) 2016-2017 Max Roncace.");
     printQ("");
     printQ("dbo-get is a utility for installing and managing projects hosted by BukkitDev,");
     printQ("the premier hosting service for Bukkit software.");
