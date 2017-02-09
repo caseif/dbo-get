@@ -18,7 +18,7 @@ Config& Config::getInstance() {
 }
 
 void Config::load() {
-    printV("Loading config from disk...");
+    printV("Loading config from " + getConfigFile());
     std::ifstream fileStream(getConfigFile());
     if (!fileStream.is_open()) {
         print("Warning: failed to read global config file");

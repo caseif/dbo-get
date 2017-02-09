@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iterator>
 #include <string>
+#include <sys/stat.h>
 #include <vector>
 
 #include <curl/curl.h>
@@ -127,6 +128,16 @@ int handleStoreCmd(int argc, char* argv[]) {
     }
     delete(params);
     std::replace(path.begin(), path.end(), '\\', '/');
+
+    //TODO: dis shit ain't portable
+    struct stat fs;
+    if (!stat(path.c_str(), &fs)) {
+        if (!(fs.st_mode & S_IFDIR)) {
+            err("Cannot set store path: provided path is regular file.");
+            return 1;
+        }
+    }
+
     Config::getInstance().set(Config::KEY_STORE, path);
     makePath(path);
     printQ("Successfully set store location as \"" + path + "\".");
