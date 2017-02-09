@@ -6,6 +6,7 @@
 enum Flag {
     kForce,
     kQuiet,
+    kSilent,
     kUpdate,
     kVerbose
 };

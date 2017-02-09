@@ -18,11 +18,13 @@
 #include "flags.h"
 
 inline void printQ(std::string str) {
-    std::cout << str.c_str() << std::endl;
+    if (!testFlag(Flag::kSilent)) {
+        std::cout << str.c_str() << std::endl;
+    }
 }
 
 inline void print(std::string str) {
-    if (!testFlag(Flag::kQuiet)) {
+    if (!testFlag(Flag::kQuiet) && !testFlag(Flag::kSilent)) {
         std::cout << str.c_str() << std::endl;
     }
 }

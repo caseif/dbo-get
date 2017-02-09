@@ -104,8 +104,9 @@ void parseParamsAndFlags(int argc, char* argv[]) {
 
     setFlags(flags);
 
-    if (testFlag(Flag::kQuiet) && testFlag(Flag::kVerbose)) {
-        err("Quiet and verbose flags cannot be used in conjunction.");
+    int collisions = testFlag(Flag::kQuiet) + testFlag(Flag::kVerbose) + testFlag(Flag::kSilent);
+    if (collisions > 1) {
+        err("Quiet, verbose, and silent flags cannot be used in conjunction with each other.");
         exit(1);
     }
 }
@@ -239,6 +240,7 @@ int handleHelpCmd(int argc, char* argv[]) {
         printQ("Flags:");
         printFlag("force", 'f', "Forces dbo-get to install packages without considering remote stages.");
         printFlag("quiet", 'q', "Enables quiet logging and suppresses much of the normal output.");
+        printFlag("silent", 's', "Disables standard logging, printing only error-level messages.");
         printFlag("update", 'u', "Forces dbo-get to upgrade packages without comparing versions.");
         printFlag("verbose", 'v', "Enables verbose logging.");
         printQ("Commands:");
