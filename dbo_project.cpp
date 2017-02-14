@@ -239,7 +239,7 @@ static size_t write_callback(char* ptr, size_t size, size_t nmemb, void* userdat
     return nbytes;
 }
 
-bool RemoteProject::install() {
+bool RemoteProject::download() {
     assert(isResolved);
 
     for (int i = 1; i <= DOWNLOAD_ATTEMPTS; i++) {
@@ -291,15 +291,19 @@ bool RemoteProject::install() {
         fclose(data);
         break;
     }
+}
 
+bool RemoteProject::install() {
     std::vector<std::string>* files = installFiles();
     StoreFile::getInstance().addProject(new LocalProject(id, numId, version, files));
-
+    if (!StoreFile::getInstance().save()) {
+        return false;
+    }
     return true;
 }
 
 std::vector<std::string>* RemoteProject::installFiles() {
-    if (ends_with(getFileName(), ".jar")) {
+    if (endsWith(getFileName(), ".jar")) {
         std::ifstream src(getDownloadCache() + "/" + getFileName(), std::ios::binary);
         if (!src.is_open()) {
             perror("Failed to read file from download cache.");

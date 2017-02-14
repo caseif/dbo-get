@@ -13,7 +13,9 @@ typedef std::map<std::string, LocalProject>::iterator str_locProj_map_it;
 
 StoreFile::StoreFile() {
     projects = std::map<std::string, LocalProject>();
-    load();
+    if (!load()) {
+        exit(1);
+    }
 }
 
 StoreFile& StoreFile::getInstance() {
@@ -25,7 +27,7 @@ std::string StoreFile::getPath() {
     return *Config::getInstance().get(Config::KEY_STORE) + "/.dbostore";
 }
 
-void StoreFile::load() {
+bool StoreFile::load() {
     assert(!initialized);
 
     std::string path = getPath();
@@ -33,11 +35,16 @@ void StoreFile::load() {
     printV("Loading store file from disk...");
     printV("Loading from " + path + ".");
 
+    if (!isRegularFile(path)) {
+        err("Cannot load store file: path does not exist or is directory.");
+        return false;
+    }
+
     Json::Value root;
     std::ifstream fileStream(path);
     if (!fileStream.is_open()) {
         initialized = true;
-        return;
+        return true;
     }
     fileStream >> root;
 
@@ -59,13 +66,20 @@ void StoreFile::load() {
 
     initialized = true;
     printV("Done loading store file.");
+
+    return true;
 }
 
-void StoreFile::save() {
+bool StoreFile::save() {
     std::string path = getPath();
 
     printV("Saving store file to disk...");
     printV("Saving to " + path);
+
+    if (!isRegularFile(path)) {
+        err("Cannot save store file: provided path exists and is not directory.");
+        return false;
+    }
 
     Json::Value root = Json::Value();
     Json::ArrayIndex ind = 0;
@@ -90,6 +104,8 @@ void StoreFile::save() {
     fileStream.close();
 
     printV("Done saving store file.");
+
+    return true;
 }
 
 LocalProject* StoreFile::getProject(std::string id) {

@@ -4,7 +4,6 @@
 #include <iostream>
 #include <iterator>
 #include <string>
-#include <sys/stat.h>
 #include <vector>
 
 #include <curl/curl.h>
@@ -129,13 +128,8 @@ int handleStoreCmd(int argc, char* argv[]) {
     delete(params);
     std::replace(path.begin(), path.end(), '\\', '/');
 
-    //TODO: dis shit ain't portable
-    struct stat fs;
-    if (!stat(path.c_str(), &fs)) {
-        if (!(fs.st_mode & S_IFDIR)) {
-            err("Cannot set store path: provided path is regular file.");
-            return 1;
-        }
+    if (isRegularFile(path)) {
+        err("Cannot set store path: provided path exists and is not directory.");
     }
 
     Config::getInstance().set(Config::KEY_STORE, path);
@@ -338,7 +332,10 @@ int install(std::vector<std::string>* projects, bool ignoreFail) {
         err("Store location is not set; please run store command first.");
         return 1;
     }
-    makePath(*loc);
+    if (!makePath(*loc)) {
+        err("Failed to make store path.");
+        return 1;
+    }
 
     std::vector<RemoteProject*>* resolved = resolve(projects, ignoreFail);
 
@@ -366,13 +363,13 @@ int install(std::vector<std::string>* projects, bool ignoreFail) {
         LocalProject* local = StoreFile::getInstance().getProject(proj->getId());
         if (local != NULL) {
             print("Upgrading project " + proj->getId() + " (#" + std::to_string(local->getVersion()) + " -> #" + std::to_string(proj->getVersion()) + ").");
-            if (!local->remove() || !proj->install()) {
-                //TODO: this shit ain't atomic
+            if (!proj->download() || !local->remove() || !proj->install()) {
+                //TODO: this shit still ain't atomic
                 return 1;
             }
         } else {
             print("Installing project " + proj->getId() + "...");
-            if (!proj->install()) {
+            if (!proj->download() || !proj->install()) {
                 return 1;
             }
         }
@@ -380,7 +377,9 @@ int install(std::vector<std::string>* projects, bool ignoreFail) {
     }
     printQ("Done.");
 
-    StoreFile::getInstance().save();
+    if (!StoreFile::getInstance().save()) {
+        return 1;
+    }
 
     return 0;
 }
@@ -429,7 +428,9 @@ int remove(std::vector<std::string>* projects) {
     }
     printQ("Done.");
 
-    StoreFile::getInstance().save();
+    if (!StoreFile::getInstance().save()) {
+        return 1;
+    }
 
     return 0;
 }

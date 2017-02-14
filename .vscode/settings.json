@@ -1,3 +1,15 @@
 {
-    "files.associations": {}
+    "files.associations": {
+        "regex": "cpp",
+        "array": "cpp",
+        "*harray": "cpp",
+        "utility": "cpp",
+        "*h*h*h*h*h*hinitializer_list": "cpp",
+        "vector": "cpp",
+        "string": "cpp",
+        "*h*h*h*h*h*h*h*h*h*h*h*hunordered_map": "cpp",
+        "unordered_map": "cpp",
+        "*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*tccdeque": "cpp",
+        "*h*h*h*h*harray": "cpp"
+    }
 }

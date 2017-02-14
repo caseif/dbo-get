@@ -37,6 +37,7 @@ class RemoteProject : public DboProject {
         std::string getFileMD5();
         Stage getStage();
         bool resolve();
+        bool download();
         bool install();
 };
 

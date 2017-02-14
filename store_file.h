@@ -17,8 +17,8 @@ class StoreFile {
         void operator = (StoreFile const&) = delete;
         static StoreFile& getInstance();
 
-        void load();
-        void save();
+        bool load();
+        bool save();
         LocalProject* getProject(std::string id);
         std::vector<LocalProject*>* getProjects();
         std::vector<std::string>* getProjectIds();

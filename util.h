@@ -13,6 +13,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <sys/stat.h>
 #include <vector>
 
 #include "flags.h"
@@ -86,9 +87,20 @@ std::string getDownloadCache();
 
 std::string md5(FILE* file);
 
-inline bool ends_with(std::string const &value, std::string const &ending) {
+inline bool endsWith(std::string const &value, std::string const &ending) {
     if (ending.size() > value.size()) {
         return false;
     }
     return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+}
+
+inline bool isRegularFile(std::string path) {
+    //TODO: dis shit ain't portable
+    struct stat fs;
+    if (!stat(path.c_str(), &fs)) {
+        if (!(fs.st_mode & S_IFDIR)) {
+            return true;
+        }
+    }
+    return false;
 }
