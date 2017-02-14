@@ -133,7 +133,10 @@ int handleStoreCmd(int argc, char* argv[]) {
     }
 
     Config::getInstance().set(Config::KEY_STORE, path);
-    makePath(path);
+    if (!makePath(path)) {
+        err("Failed to make store path.");
+        return 1;
+    }
     printQ("Successfully set store location as \"" + path + "\".");
 
     return 0;
@@ -390,7 +393,10 @@ int remove(std::vector<std::string>* projects) {
         err("Store location is not set; please run store command first.");
         return 1;
     }
-    makePath(*loc);
+    if (!makePath(*loc)) {
+        err("Failed to make store path.");
+        return 1;
+    }
 
     printQ("Resolving projects...");
     bool fail = false;

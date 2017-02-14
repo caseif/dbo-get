@@ -10,6 +10,8 @@
         "*h*h*h*h*h*h*h*h*h*h*h*hunordered_map": "cpp",
         "unordered_map": "cpp",
         "*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*h*tccdeque": "cpp",
-        "*h*h*h*h*harray": "cpp"
+        "*h*h*h*h*harray": "cpp",
+        "*cppbitset": "cpp",
+        "bitset": "cpp"
     }
 }

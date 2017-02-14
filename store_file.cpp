@@ -35,7 +35,7 @@ bool StoreFile::load() {
     printV("Loading store file from disk...");
     printV("Loading from " + path + ".");
 
-    if (!isRegularFile(path)) {
+    if (isRegularFile(path)) {
         err("Cannot load store file: path does not exist or is directory.");
         return false;
     }
