@@ -35,7 +35,7 @@ bool StoreFile::load() {
     printV("Loading store file from disk...");
     printV("Loading from " + path + ".");
 
-    if (isDirectory(path)) {
+    if (existsDir(path)) {
         err("Cannot load store file: path is directory.");
         return false;
     }
@@ -76,7 +76,7 @@ bool StoreFile::save() {
     printV("Saving store file to disk...");
     printV("Saving to " + path);
 
-    if (isDirectory(path)) {
+    if (existsDir(path)) {
         err("Cannot save store file: provided path is directory.");
         return false;
     }

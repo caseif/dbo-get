@@ -87,15 +87,15 @@ std::string getDownloadCache();
 
 std::string md5(FILE* file);
 
+bool existsNonDir(const std::string& path);
+
+bool existsDir(const std::string& path);
+
+bool exists(const std::string& path);
+
 inline bool endsWith(std::string const &value, std::string const &ending) {
     if (ending.size() > value.size()) {
         return false;
     }
     return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
-}
-
-inline bool isDirectory(std::string path) {
-    //TODO: dis shit ain't portable
-    struct stat fs;
-    return stat(path.c_str(), &fs) && (fs.st_mode & S_IFDIR);
 }

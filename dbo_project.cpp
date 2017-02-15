@@ -246,6 +246,28 @@ bool RemoteProject::download() {
     for (int i = 1; i <= DOWNLOAD_ATTEMPTS; i++) {
         makePath(getDownloadCache());
         std::string fileName = getDownloadCache() + "/" + getFileName();
+
+        if (exists(*Config::getInstance().get(Config::KEY_STORE) + "/" + getFileName())
+                && StoreFile::getInstance().getProject(getId())) {
+            std::string conflict = "(unknown)";
+            for (LocalProject* proj : *StoreFile::getInstance().getProjects()) {
+                if (proj->getId() == getId()) {
+                    continue;
+                }
+                for (std::string file : proj->getFiles()) {
+                    if (file == getFileName()) {
+                        conflict = proj->getId();
+                    }
+                }
+            }
+
+            if (conflict != "(unknown)") {
+                err("File \"" + getFileName() + "\" conflicts with file installed by project " + conflict + ".");
+                err("Cannot proceed, aborting.");
+                return false;
+            }
+        }
+
         printV("Downloading to " + fileName + " from " + getFileUrl() + ".");
         std::ofstream output(fileName, std::ios::binary | std::ios_base::out);
         CURL* query = curl_easy_init();

@@ -5,6 +5,7 @@
 #include "util.h"
 
 #include <algorithm>
+#include <assert.h>
 #include <iostream>
 #include <openssl/md5.h>
 #include <string>
@@ -44,21 +45,43 @@ std::vector<std::string> explode(std::string const & s, char delim) {
     return result;
 }
 
-// from https://stackoverflow.com/a/29828907/1988755
-bool isDirExist(const std::string& path) {
-#if defined(_WIN32)
+// adapted from https://stackoverflow.com/a/29828907/1988755
+static bool exists(const std::string& path, int dir) {
+    assert(dir >= 0 && dir <= 2);
+
+    #if defined(_WIN32)
     struct _stat info;
     if (_stat(path.c_str(), &info) != 0) {
         return false;
     }
-    return (info.st_mode & _S_IFDIR) != 0;
+    if (dir == 2) {
+        return true;
+    }
+    bool isDir = (info.st_mode & _S_IFDIR) != 0;
+    return isDir == dir;
 #else 
     struct stat info;
     if (stat(path.c_str(), &info) != 0) {
         return false;
     }
-    return (info.st_mode & S_IFDIR) != 0;
+    if (dir == 2) {
+        return true;
+    }
+    bool isDir = (info.st_mode & S_IFDIR) != 0;
+    return isDir == dir;
 #endif
+}
+
+bool existsNonDir(const std::string& path) {
+    return exists(path, 0);
+}
+
+bool existsDir(const std::string& path) {
+    return exists(path, 1);
+}
+
+bool exists(const std::string& path) {
+    return exists(path, 2);
 }
 
 bool makePath(const std::string& path) {
@@ -94,7 +117,7 @@ bool makePath(const std::string& path) {
 
     case EEXIST:
         // done!
-        return isDirExist(path);
+        return existsDir(path);
 
     default:
         return false;

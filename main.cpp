@@ -128,7 +128,7 @@ int handleStoreCmd(int argc, char* argv[]) {
     delete(params);
     std::replace(path.begin(), path.end(), '\\', '/');
 
-    if (!isDirectory(path)) {
+    if (existsNonDir(path)) {
         err("Cannot set store path: provided path exists and is not directory.");
     }
 
