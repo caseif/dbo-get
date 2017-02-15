@@ -17,7 +17,7 @@
 #include "store_file.h"
 #include "util.h"
 
-static const std::string kVersion = "0.4.0-SNAPSHOT";
+static const std::string kVersion = "0.4.0";
 
 static const int kInstallDialogLineLength = 80;
 static const int kHelpCmdIndentSize = 10;
