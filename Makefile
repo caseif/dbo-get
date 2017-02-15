@@ -3,7 +3,7 @@ OUT_DIR=build
 SRC_EXT=cpp
 OBJ_EXT=o
 
-CPPFLAGS= -std=c++11 -I/usr/include/jsoncpp
+CPPFLAGS= -Wall -pedantic-errors -std=c++11 -I/usr/include/jsoncpp
 
 LIBFLAGS=-lcurl -lssh2 -lcrypto -lzip -ljsoncpp
 CPPFLAGS+= $(LIBFLAGS)

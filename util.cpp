@@ -98,15 +98,16 @@ bool makePath(const std::string& path) {
     case ENOENT:
         // parent didn't exist, try to create it
     {
-        int pos = path.find_last_of('/');
+        uint pos = path.find_last_of('/');
         if (pos == std::string::npos)
 #ifdef _WIN32
             pos = path.find_last_of('\\');
         if (pos == std::string::npos)
 #endif
             return false;
-        if (!makePath(path.substr(0, pos)))
+        if (!makePath(path.substr(0, pos))) {
             return false;
+        }
     }
     // now, try to create again
 #ifdef _WIN32

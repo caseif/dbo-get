@@ -23,7 +23,6 @@ const Flag* matchFlag(std::string name) {
 }
 
 bool testFlag(Flag flag) {
-    const void* loc = flags;
     return std::find(flags->begin(), flags->end(), flag) != flags->end();
 }
 

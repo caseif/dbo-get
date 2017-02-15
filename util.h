@@ -1,15 +1,5 @@
 #pragma once
 
-#ifdef _WIN32
-#define OS "win"
-#elif __APPLE__
-#define OS "osx"
-#elif __linux__ || __unix__
-#define OS "nix"
-#else
-#error "Unknown compiler platform"
-#endif
-
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -17,6 +7,16 @@
 #include <vector>
 
 #include "flags.h"
+
+#ifdef _WIN32
+static const std::string OS = "win";
+#elif __APPLE__
+static const std::string OS = "osx";
+#elif __linux__ || __unix__
+static const std::string OS = "nix";
+#else
+#error "Unknown compiler platform"
+#endif
 
 inline void printQ(std::string str) {
     if (!testFlag(Flag::kSilent)) {
