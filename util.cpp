@@ -2,8 +2,6 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #endif
 
-#define OS_WINDOWS defined(_WIN32)
-
 #include "util.h"
 
 #include <algorithm>
@@ -14,15 +12,15 @@
 
 #include <errno.h>
 #include <sys/stat.h> // stat
-#if OS_WINDOWS
+#ifdef _WIN32
 #include <direct.h>
 #endif
 
 #include "flags.h"
 
 // courtesy of http://stackoverflow.com/a/36401787/1988755
-size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb, std::string *s) {
-    size_t newLength = size*nmemb;
+size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb, std::string* s) {
+    size_t newLength = size * nmemb;
     size_t oldLength = s->size();
     try {
         s->resize(oldLength + newLength);
@@ -31,8 +29,8 @@ size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmem
         return 0;
     }
 
-    std::copy((char*)contents, (char*)contents + newLength, s->begin() + oldLength);
-    return size*nmemb;
+    std::copy((char*) contents, (char*) contents + newLength, s->begin() + oldLength);
+    return size * nmemb;
 }
 
 // from https://stackoverflow.com/a/12967010/1988755
@@ -51,7 +49,7 @@ std::vector<std::string> explode(std::string const & s, char delim) {
 static bool exists(const std::string& path, int dir) {
     assert(dir >= 0 && dir <= 2);
 
-    #if OS_WINDOWS
+    #ifdef _WIN32
     struct _stat info;
     if (_stat(path.c_str(), &info) != 0) {
         return false;
@@ -87,7 +85,7 @@ bool exists(const std::string& path) {
 }
 
 bool makePath(const std::string& path) {
-#if OS_WINDOWS
+#ifdef _WIN32
     int ret = _mkdir(path.c_str());
 #else
     mode_t mode = 0755;
@@ -102,7 +100,7 @@ bool makePath(const std::string& path) {
     {
         int pos = path.find_last_of('/');
         if (pos == std::string::npos)
-#if OS_WINDOWS
+#ifdef _WIN32
             pos = path.find_last_of('\\');
         if (pos == std::string::npos)
 #endif
@@ -111,7 +109,7 @@ bool makePath(const std::string& path) {
             return false;
     }
     // now, try to create again
-#if OS_WINDOWS
+#ifdef _WIN32
     return 0 == _mkdir(path.c_str());
 #else 
     return 0 == mkdir(path.c_str(), mode);

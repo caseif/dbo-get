@@ -2,8 +2,6 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #endif
 
-#define OS_WINDOWS defined(_WIN32)
-
 #include <assert.h>
 #include <cstring>
 #include <fstream>
@@ -12,7 +10,7 @@
 #include <stdio.h>
 #include <string>
 
-#if OS_WINDOWS
+#ifdef _WIN32
 #include <io.h>
 #else
 #include <unistd.h>
@@ -177,8 +175,8 @@ bool RemoteProject::parseId(std::string json) {
     // jsoncpp includes some error messages that can't be disabled.
     // We don't want that, so we gotta do some real evil shit to suppress them.
     // Specifically, we're literally closing the error stream temporarily.
-    #if OS_WINDOWS
-    int o = _dup(_fileno(stderr))
+    #ifdef _WIN32
+    int o = _dup(_fileno(stderr));
     #else
     int o = dup(fileno(stderr));
     #endif
@@ -186,12 +184,14 @@ bool RemoteProject::parseId(std::string json) {
     std::stringstream contentStream(json);
     std::string alts = "";
     contentStream >> root;
-    #if OS_WINDOWS
+    // this "ISO compatibility" shit is getting real annoying man
+    #ifdef _WIN32
     _dup2(o, _fileno(stderr));
+    _close(o);
     #else
     dup2(o, fileno(stderr));
-    #endif
     close(o);
+    #endif
 
     for (Json::ArrayIndex i = 0; i < root.size(); i++) {
         if (root[i]["slug"] == getId()) {
@@ -218,7 +218,7 @@ bool RemoteProject::populateFields(std::string json) {
     Json::Value root;
     
     // Same deal here - evil shit to suppress jsoncpp error messages.
-    #if OS_WINDOWS
+    #ifdef _WIN32
     int o = _dup(_fileno(stderr));
     #else
     int o = dup(fileno(stderr));
@@ -226,12 +226,13 @@ bool RemoteProject::populateFields(std::string json) {
     fclose(stderr);
     std::stringstream contentStream(json);
     contentStream >> root;
-    #if OS_WINDOWS
+    #ifdef _WIN32
     _dup2(o, _fileno(stderr));
+    _close(o);
     #else
     dup2(o, fileno(stderr));
-    #endif
     close(o);
+    #endif
 
     if (root.size() == 0) {
         err("No artifacts available for project " + getId() + ".");
