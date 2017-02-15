@@ -2,6 +2,8 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #endif
 
+#define OS_WINDOWS defined(_WIN32)
+
 #include <assert.h>
 #include <cstring>
 #include <fstream>
@@ -9,7 +11,12 @@
 #include <regex>
 #include <stdio.h>
 #include <string>
+
+#if OS_WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 #include <curl/curl.h>
 #include <json/json.h>
@@ -170,12 +177,20 @@ bool RemoteProject::parseId(std::string json) {
     // jsoncpp includes some error messages that can't be disabled.
     // We don't want that, so we gotta do some real evil shit to suppress them.
     // Specifically, we're literally closing the error stream temporarily.
+    #if OS_WINDOWS
+    int o = _dup(_fileno(stderr))
+    #else
     int o = dup(fileno(stderr));
+    #endif
     fclose(stderr);
     std::stringstream contentStream(json);
     std::string alts = "";
     contentStream >> root;
+    #if OS_WINDOWS
+    _dup2(o, _fileno(stderr));
+    #else
     dup2(o, fileno(stderr));
+    #endif
     close(o);
 
     for (Json::ArrayIndex i = 0; i < root.size(); i++) {
@@ -203,11 +218,19 @@ bool RemoteProject::populateFields(std::string json) {
     Json::Value root;
     
     // Same deal here - evil shit to suppress jsoncpp error messages.
+    #if OS_WINDOWS
+    int o = _dup(_fileno(stderr));
+    #else
     int o = dup(fileno(stderr));
+    #endif
     fclose(stderr);
     std::stringstream contentStream(json);
     contentStream >> root;
+    #if OS_WINDOWS
+    _dup2(o, _fileno(stderr));
+    #else
     dup2(o, fileno(stderr));
+    #endif
     close(o);
 
     if (root.size() == 0) {

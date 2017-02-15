@@ -2,6 +2,8 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #endif
 
+#define OS_WINDOWS defined(_WIN32)
+
 #include "util.h"
 
 #include <algorithm>
@@ -12,7 +14,7 @@
 
 #include <errno.h>
 #include <sys/stat.h> // stat
-#if defined(_WIN32)
+#if OS_WINDOWS
 #include <direct.h>
 #endif
 
@@ -49,7 +51,7 @@ std::vector<std::string> explode(std::string const & s, char delim) {
 static bool exists(const std::string& path, int dir) {
     assert(dir >= 0 && dir <= 2);
 
-    #if defined(_WIN32)
+    #if OS_WINDOWS
     struct _stat info;
     if (_stat(path.c_str(), &info) != 0) {
         return false;
@@ -85,7 +87,7 @@ bool exists(const std::string& path) {
 }
 
 bool makePath(const std::string& path) {
-#if defined(_WIN32)
+#if OS_WINDOWS
     int ret = _mkdir(path.c_str());
 #else
     mode_t mode = 0755;
@@ -100,7 +102,7 @@ bool makePath(const std::string& path) {
     {
         int pos = path.find_last_of('/');
         if (pos == std::string::npos)
-#if defined(_WIN32)
+#if OS_WINDOWS
             pos = path.find_last_of('\\');
         if (pos == std::string::npos)
 #endif
@@ -109,7 +111,7 @@ bool makePath(const std::string& path) {
             return false;
     }
     // now, try to create again
-#if defined(_WIN32)
+#if OS_WINDOWS
     return 0 == _mkdir(path.c_str());
 #else 
     return 0 == mkdir(path.c_str(), mode);
