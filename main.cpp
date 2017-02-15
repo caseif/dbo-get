@@ -128,7 +128,7 @@ int handleStoreCmd(int argc, char* argv[]) {
     delete(params);
     std::replace(path.begin(), path.end(), '\\', '/');
 
-    if (isRegularFile(path)) {
+    if (!isDirectory(path)) {
         err("Cannot set store path: provided path exists and is not directory.");
     }
 
@@ -356,6 +356,21 @@ int install(std::vector<std::string>* projects, bool ignoreFail) {
 
     printInstallDialog(resolved);
 
+    printQ("Downloading artifacts...");
+    for (size_t i = 0; i < resolved->size(); i++) {
+        RemoteProject* proj = (*resolved)[i];
+        if (proj == NULL) {
+            continue;
+        }
+        print("Downloading artifact for project " + proj->getId() + ".");
+        if (!proj->download()) {
+            err("Failed to download artifact for project " + proj->getId() + ".");
+            return 1;
+        }
+        printV("Done downloading " + proj->getId() + ".");
+    }
+    printQ("Done downloading.");
+
     printQ("Installing projects...");
     for (size_t i = 0; i < resolved->size(); i++) {
         RemoteProject* proj = (*resolved)[i];
@@ -366,7 +381,7 @@ int install(std::vector<std::string>* projects, bool ignoreFail) {
         LocalProject* local = StoreFile::getInstance().getProject(proj->getId());
         if (local != NULL) {
             print("Upgrading project " + proj->getId() + " (#" + std::to_string(local->getVersion()) + " -> #" + std::to_string(proj->getVersion()) + ").");
-            if (!proj->download() || !local->remove() || !proj->install()) {
+            if (!local->remove() || !proj->install()) {
                 //TODO: this shit still ain't atomic
                 return 1;
             }
@@ -376,7 +391,7 @@ int install(std::vector<std::string>* projects, bool ignoreFail) {
                 return 1;
             }
         }
-        print("Done installing " + proj->getId() + ".");
+        printV("Done installing " + proj->getId() + ".");
     }
     printQ("Done.");
 

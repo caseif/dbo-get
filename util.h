@@ -94,13 +94,8 @@ inline bool endsWith(std::string const &value, std::string const &ending) {
     return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 }
 
-inline bool isRegularFile(std::string path) {
+inline bool isDirectory(std::string path) {
     //TODO: dis shit ain't portable
     struct stat fs;
-    if (!stat(path.c_str(), &fs)) {
-        if (!(fs.st_mode & S_IFDIR)) {
-            return true;
-        }
-    }
-    return false;
+    return stat(path.c_str(), &fs) && (fs.st_mode & S_IFDIR);
 }

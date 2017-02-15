@@ -169,6 +169,7 @@ bool RemoteProject::parseId(std::string json) {
 
     // jsoncpp includes some error messages that can't be disabled.
     // We don't want that, so we gotta do some real evil shit to suppress them.
+    // Specifically, we're literally closing the error stream temporarily.
     int o = dup(fileno(stderr));
     fclose(stderr);
     std::stringstream contentStream(json);
@@ -266,7 +267,6 @@ bool RemoteProject::download() {
             return false;
         }
         curl_easy_cleanup(query);
-        printV("Done downloading.");
 
         FILE* data = fopen(fileName.c_str(), "rb");
         if (!data) {
@@ -291,6 +291,7 @@ bool RemoteProject::download() {
         fclose(data);
         break;
     }
+    return true;
 }
 
 bool RemoteProject::install() {
