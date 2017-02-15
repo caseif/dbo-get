@@ -123,6 +123,7 @@
     <ClCompile Include="dbo_project.cpp" />
     <ClCompile Include="flags.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="stage.cpp" />
     <ClCompile Include="store_file.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="zip_util.cpp" />
@@ -133,6 +134,7 @@
     <ClInclude Include="dbo_project.h" />
     <ClInclude Include="flags.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="stage.h" />
     <ClInclude Include="store_file.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="zip_util.h" />

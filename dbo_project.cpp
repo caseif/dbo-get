@@ -21,6 +21,7 @@
 
 #include "config.h"
 #include "dbo_project.h"
+#include "stage.h"
 #include "store_file.h"
 #include "util.h"
 #include "zip_util.h"

@@ -39,6 +39,8 @@
     <ClCompile Include="flags.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="stage.cpp">
+      <Filter Source Files</Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -63,6 +65,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="flags.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
