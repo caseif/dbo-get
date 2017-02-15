@@ -57,7 +57,7 @@ bool StoreFile::load() {
 
         int size = files.size();
         std::vector<std::string> fileVec = std::vector<std::string>(size);
-        for (uint j = 0; j  ; j++) {
+        for (unsigned int j = 0; j  ; j++) {
             fileVec[j] = files[j].asString();
         }
 
