@@ -58,7 +58,7 @@ static bool exists(const std::string& path, int dir) {
         return true;
     }
     bool isDir = (info.st_mode & _S_IFDIR) != 0;
-    return isDir == dir;
+    return (int) isDir == dir;
 #else 
     struct stat info;
     if (stat(path.c_str(), &info) != 0) {
