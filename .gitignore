@@ -266,3 +266,5 @@ build/
 
 # Installer files
 *.deb
+dbo-get/bin
+dbo-get/etc

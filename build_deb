@@ -1,10 +1,13 @@
 #!/bin/bash
 dir="dbo-get"
 bin="build/dbo-get"
+etc="etc/"
 make
 if [ -r dbo-get ]
 then
-    cp $bin $dir/bin
+    mkdir -p $dir/bin/
+    cp $bin $dir/bin/
+    cp -r $etc $dir/etc
     dpkg-deb --build dbo-get
 else echo "Workspace is corrupt (try recloning)."
 fi
