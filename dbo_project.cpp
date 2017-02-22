@@ -140,7 +140,7 @@ bool RemoteProject::doLookup() {
 
     try {
         return parseId(json);
-    } catch (Json::RuntimeError ex) {
+    } catch (std::exception ex) {
         err("Remote returned malformed JSON on project lookup.");
         return false;
     }
@@ -174,7 +174,7 @@ bool RemoteProject::doQuery() {
 
     try {
         return populateFields(json);
-    } catch (Json::RuntimeError ex) {
+    } catch (std::exception ex) {
         err("Remote returned malformed JSON on project query.");
         return false;
     }
