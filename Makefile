@@ -1,26 +1,37 @@
-CXX=g++
-OUT_DIR=build
-SRC_EXT=cpp
-OBJ_EXT=o
+# The Makefile language is probably the most confusing one I've ever used. This
+# file is a mosaic of probably 15 different StackOverflow posts, plus a couple
+# articles from other sites for good measure.
 
-CPPFLAGS= -Wall -pedantic-errors -std=c++11 -I/usr/include/jsoncpp
+CC = gcc
+CXX = g++
+OUT_DIR = build
+SRC_EXT_C = c
+SRC_EXT_CXX = cpp
+OBJ_EXT = o
 
-LIBFLAGS=-lcurl -lssh2 -lcrypto -lzip -ljsoncpp
-CPPFLAGS+= $(LIBFLAGS)
+CFLAGS = -Wall -pedantic-errors -std=c11
+CXXFLAGS = -Wall -pedantic-errors -std=c++11 -I/usr/include/jsoncpp
 
-RM=rm -f
-LDFLAGS=-g
+LIBFLAGS = -lcurl -lssh2 -lcrypto -lzip -ljsoncpp
+CFLAGS +=  $(LIBFLAGS)
+CXXFLAGS += $(LIBFLAGS)
 
-SRC=$(wildcard *.$(SRC_EXT))
-OBJS=$(patsubst %.cpp,$(OUT_DIR)/%.$(OBJ_EXT),$(SRC))
+RM = rm -f
+LDFLAGS =
+
+SRC_C = $(wildcard *.$(SRC_EXT_C))
+SRC_CXX = $(wildcard *.$(SRC_EXT_CXX))
+
+OBJS = $(patsubst %, $(OUT_DIR)/%, $(patsubst %.$(SRC_EXT_C), %.$(OBJ_EXT), $(SRC_C)) $(patsubst %.$(SRC_EXT_CXX), %.$(OBJ_EXT), $(SRC_CXX)))
 
 all: directories dboget
 
 dboget: $(OBJS)
-	$(CXX) $(LDFLAGS) -o $(OUT_DIR)/dbo-get $(OBJS) $(LDLIBS) $(CPPFLAGS)
+	$(CXX) $(LDFLAGS) -o $(OUT_DIR)/dbo-get $(OBJS) $(LDLIBS) $(CXXFLAGS)
 
-$(OUT_DIR)/%.$(OBJ_EXT): %.$(SRC_EXT)
-	@$(CXX) $(CPPFLAGS) -MD -c -o $@ $<
+.SECONDEXPANSION:
+$(OUT_DIR)/%.$(OBJ_EXT): $$(wildcard %.$(SRC_EXT_C)) $$(wildcard %.$(SRC_EXT_CXX))
+	$(CXX) $(CXXFLAGS) -MD -c -o $@ $<
 	@cp $(OUT_DIR)/$*.d $(OUT_DIR)/$*.P; \
 			sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 			-e '/^$$/ d' -e 's/$$/ :/' < $(OUT_DIR)/$*.d >> $(OUT_DIR)/$*.P; \
@@ -29,9 +40,9 @@ $(OUT_DIR)/%.$(OBJ_EXT): %.$(SRC_EXT)
 -include *.P
 
 clean:
-	$(RM) $(OBJS)
+	$(RM -r $(OUT_DIR))
 
-MKDIR_P = mkdir -p
+MKDIR_P = @mkdir -p
 
 .PHONY: directories
 

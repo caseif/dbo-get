@@ -1,0 +1,10 @@
+Package: dbo-get
+Version: 0.5.0~SNAPSHOT-1
+Section: utils
+Priority: optional
+Architecture: i386
+Depends: libcurl3, libzip4 | libzip2, libssl1.0.0, libjsoncpp1 | libjsoncpp0 | ca-certificates
+Maintainer: Max Roncace <me@caseif.net>
+Description: dbo-get
+  dbo-get is a utility for installing and managing projects hosted by BukkitDev,
+  the premier hosting service for Bukkit software.

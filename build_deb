@@ -1,0 +1,4 @@
+#!/bin/bash
+make
+cp build/dbo-get dbo-get_0.5.0~SNAPSHOT/bin/
+dpkg-deb --build dbo-get_0.5.0~SNAPSHOT

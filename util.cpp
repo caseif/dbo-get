@@ -18,6 +18,10 @@
 
 #include "flags.h"
 
+extern "C" {
+    #include "whereami.h"
+}
+
 // courtesy of http://stackoverflow.com/a/36401787/1988755
 size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb, std::string* s) {
     size_t newLength = size * nmemb;
@@ -168,4 +172,19 @@ std::string md5(FILE* file) {
         sprintf(&md5string[i * 2], "%02x", (unsigned int) digest[i]);
     }
     return std::string(md5string);
+}
+
+std::string getExecutableDir() {
+    int dirname_length;
+    int length = wai_getExecutablePath(NULL, 0, &dirname_length);
+    if (length == 0) {
+        return std::string("");
+    }
+
+    char* path = (char*) malloc(length + 1);
+    wai_getExecutablePath(path, length, &dirname_length);
+    path[dirname_length] = '\0';
+    std::string str = std::string(path);
+    free(path);
+    return str;
 }

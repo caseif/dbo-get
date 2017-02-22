@@ -263,3 +263,6 @@ __pycache__/
 *.o
 *.P
 build/
+
+# Installer files
+*.deb

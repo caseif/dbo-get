@@ -83,13 +83,22 @@ int RemoteProject::parseVersion(std::string url) {
     }
 }
 
-void setOptions(CURL* curl) {
+bool setOptions(CURL* curl) {
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 1);
-    curl_easy_setopt(curl, CURLOPT_CAINFO, "res/curl-ca-bundle.crt");
+    std::string exeDir = getExecutableDir();
+    if (exeDir.empty()) {
+        err("Failed to get executable path.");
+        return false;
+    }
+    size_t lastSeparator = exeDir.find_last_of("/");
+    exeDir = exeDir.substr(0, lastSeparator);
+    curl_easy_setopt(curl, CURLOPT_CAINFO, (exeDir + "/etc/curl-ca-bundle.crt").c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString);
     curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
+
+    return true;
 }
 
 bool RemoteProject::resolve() {
@@ -104,8 +113,10 @@ bool RemoteProject::doLookup() {
         return false;
     }
 
+    if (!setOptions(search)) {
+        return false;
+    }
     std::string json;
-    setOptions(search);
     curl_easy_setopt(search, CURLOPT_WRITEDATA, &json);
     curl_easy_setopt(search, CURLOPT_URL, (CF_SEARCH_URL + getId()).c_str());
 

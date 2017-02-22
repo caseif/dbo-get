@@ -93,6 +93,8 @@ bool existsDir(const std::string& path);
 
 bool exists(const std::string& path);
 
+std::string getExecutableDir();
+
 inline bool endsWith(std::string const &value, std::string const &ending) {
     if (ending.size() > value.size()) {
         return false;
