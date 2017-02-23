@@ -118,26 +118,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="command.cpp" />
-    <ClCompile Include="config.cpp" />
-    <ClCompile Include="dbo_project.cpp" />
-    <ClCompile Include="flags.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="stage.cpp" />
-    <ClCompile Include="store_file.cpp" />
-    <ClCompile Include="util.cpp" />
-    <ClCompile Include="zip_util.cpp" />
+    <ClCompile Include="src/command.cpp" />
+    <ClCompile Include="src/config.cpp" />
+    <ClCompile Include="src/dbo_project.cpp" />
+    <ClCompile Include="src/flags.cpp" />
+    <ClCompile Include="src/main.cpp" />
+    <ClCompile Include="src/stage.cpp" />
+    <ClCompile Include="src/store_file.cpp" />
+    <ClCompile Include="src/util.cpp" />
+    <ClCompile Include="src/zip_util.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="command.h" />
-    <ClInclude Include="config.h" />
-    <ClInclude Include="dbo_project.h" />
-    <ClInclude Include="flags.h" />
-    <ClInclude Include="main.h" />
-    <ClInclude Include="stage.h" />
-    <ClInclude Include="store_file.h" />
-    <ClInclude Include="util.h" />
-    <ClInclude Include="zip_util.h" />
+    <ClInclude Include="src/command.h" />
+    <ClInclude Include="src/config.h" />
+    <ClInclude Include="src/dbo_project.h" />
+    <ClInclude Include="src/flags.h" />
+    <ClInclude Include="src/main.h" />
+    <ClInclude Include="src/stage.h" />
+    <ClInclude Include="src/store_file.h" />
+    <ClInclude Include="src/util.h" />
+    <ClInclude Include="src/zip_util.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
